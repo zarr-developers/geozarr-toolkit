@@ -249,6 +249,7 @@ main {
 .info-grid dd {
   font-family: monospace;
   font-size: 0.85rem;
+  word-break: break-word;
 }
 
 /* --- Attributes section --- */

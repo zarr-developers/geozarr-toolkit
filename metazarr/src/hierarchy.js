@@ -9,6 +9,7 @@
  * @property {number[]|undefined} shape - Array shape (arrays only)
  * @property {string|undefined} dtype - Array data type (arrays only)
  * @property {any|undefined} chunks - Array chunk configuration (arrays only)
+ * @property {object|null|undefined} meta - Raw metadata (.zarray for v2, zarr.json for v3)
  */
 
 import * as zarr from "zarrita";
@@ -54,6 +55,7 @@ export function buildTreeFromV3(v3Entries) {
       kind: entry.kind,
       children: [],
       attrs: entry.attrs,
+      meta: entry.meta || null,
     };
 
     // Extract array metadata from the v3 metadata object if available
@@ -194,6 +196,33 @@ export function findNode(root, path) {
 }
 
 /**
+ * Read the raw metadata file (.zarray or zarr.json) from the store.
+ * For consolidated stores, this hits the in-memory cache (no network request).
+ *
+ * @param {object} store - A zarrita store with a get() method
+ * @param {string} path - Node path (e.g. "/", "/group1/array1")
+ * @returns {Promise<object|null>} Parsed metadata object, or null
+ */
+async function readRawMeta(store, path) {
+  const prefix = path === "/" ? "" : path;
+  // Try v3 first
+  try {
+    const v3Bytes = await store.get(`${prefix}/zarr.json`);
+    if (v3Bytes) {
+      return JSON.parse(new TextDecoder().decode(v3Bytes));
+    }
+  } catch { /* ignore */ }
+  // Fall back to v2
+  try {
+    const v2Bytes = await store.get(`${prefix}/.zarray`);
+    if (v2Bytes) {
+      return JSON.parse(new TextDecoder().decode(v2Bytes));
+    }
+  } catch { /* ignore */ }
+  return null;
+}
+
+/**
  * @param {object} store
  * @param {string} path
  * @param {"group"|"array"} [hintKind]
@@ -219,6 +248,7 @@ async function openNodeFromStore(store, path, hintKind) {
       treeNode.shape = node.shape;
       treeNode.dtype = node.dtype;
       treeNode.chunks = node.chunks;
+      treeNode.meta = await readRawMeta(store, path);
     }
 
     return treeNode;
