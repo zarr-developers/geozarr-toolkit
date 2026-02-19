@@ -127,6 +127,35 @@ uv run --group web uvicorn geozarr_toolkit.application.app:app --reload
 
 Paste a Zarr store URL (https://, s3://, gs://, az://) and optionally a group path to validate against GeoZarr conventions.
 
+## metazarr
+
+[`metazarr/`](metazarr/) is a client-side JavaScript library and web app for exploring Zarr store hierarchies and validating GeoZarr convention compliance. It runs entirely in the browser with no server required.
+
+Features:
+
+- Opens remote Zarr v2 and v3 stores (consolidated metadata, directory crawling, or manual path entry)
+- Displays full array metadata: shape, dtype, chunks, fill value, codecs/compressor, dimension names, chunk key encoding, memory order, and computed statistics (uncompressed size, chunk count, chunk size)
+- Detects sharding (v3 `sharding_indexed` codec)
+- Auto-detects GeoZarr conventions (spatial:, proj:, multiscales, CF) via `zarr_conventions` or attribute prefixes
+- Validates nodes against convention JSON Schemas (Draft-07 and Draft 2020-12)
+
+```bash
+cd metazarr
+npm install
+npm run dev    # Start dev server at http://localhost:5173
+npm test       # Run test suite
+```
+
+Also usable as an ES module:
+
+```javascript
+import { openStore, buildTree, detectConventions, validateNode, buildNodeDocument } from "metazarr";
+
+const result = await openStore("https://example.com/data.zarr");
+const tree = buildTreeFromV3(result.v3Entries);
+const conventions = detectConventions(tree.attrs);
+```
+
 ## Development
 
 ```bash
