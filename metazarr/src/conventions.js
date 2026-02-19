@@ -39,7 +39,7 @@ const KNOWN_CONVENTIONS = {
   "77c308c7-4db2-4774-8b2d-aa37e9997db6": {
     name: "CF",
     display: "CF (Climate and Forecast)",
-    color: "#D55E00", // vermillion
+    color: "#D55E00", // vermilion
     schemaUrl: "https://raw.githubusercontent.com/zarr-conventions/CF/refs/heads/main/schema.json",
     specUrl: "https://github.com/zarr-conventions/CF/blob/main/README.md",
   },
@@ -47,6 +47,24 @@ const KNOWN_CONVENTIONS = {
 
 /** Default color for unknown conventions. */
 const DEFAULT_COLOR = "#888888";
+
+/**
+ * Validate that a URL is a safe HTTP(S) URL.
+ * Rejects javascript:, data:, and other non-HTTP schemes.
+ *
+ * @param {string|undefined} url
+ * @returns {string|undefined} The URL if safe, undefined otherwise
+ */
+function sanitizeUrl(url) {
+  if (typeof url !== "string") return undefined;
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol === "https:" || parsed.protocol === "http:") return url;
+  } catch {
+    // invalid URL
+  }
+  return undefined;
+}
 
 /** Attribute key prefixes used for fallback detection. */
 const PREFIX_DETECTION = [
@@ -84,8 +102,8 @@ export function detectConventions(attrs) {
         name: conv.name || known?.name || "unknown",
         display: known?.display || conv.name || conv.description || uuid || "Unknown Convention",
         color: known?.color || DEFAULT_COLOR,
-        schemaUrl: known?.schemaUrl || conv.schema_url || undefined,
-        specUrl: known?.specUrl || conv.spec_url || undefined,
+        schemaUrl: known?.schemaUrl || sanitizeUrl(conv.schema_url),
+        specUrl: known?.specUrl || sanitizeUrl(conv.spec_url),
       };
       const key = uuid || conv.name || conv.schema_url;
       if (key && !found.has(key)) {
