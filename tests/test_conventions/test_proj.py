@@ -77,6 +77,16 @@ class TestProj:
         assert result["proj:code"] == "EPSG:32633"
         assert "proj:wkt2" not in result  # Should be excluded as None
 
+    def test_invalid_code_format(self) -> None:
+        """Test that malformed code is rejected."""
+        with pytest.raises(ValidationError, match="AUTHORITY:CODE"):
+            Proj(**{"proj:code": "not-a-valid-code"})
+
+    def test_unresolvable_code(self) -> None:
+        """Test that a well-formed but nonexistent EPSG code is rejected."""
+        with pytest.raises(ValidationError, match="does not resolve"):
+            Proj(**{"proj:code": "EPSG:99999"})
+
     def test_geoproj_alias(self) -> None:
         """Test that GeoProj is an alias for Proj."""
         assert GeoProj is Proj

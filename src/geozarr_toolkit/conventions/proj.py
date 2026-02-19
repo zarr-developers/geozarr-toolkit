@@ -10,9 +10,10 @@ Specification: https://github.com/zarr-experimental/geo-proj
 
 from __future__ import annotations
 
+import re
 from typing import Any, Final, Literal
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 from geozarr_toolkit.conventions.common import ZarrConventionMetadata, is_none
 
@@ -33,6 +34,9 @@ class ProjConventionMetadata(ZarrConventionMetadata):
     schema_url: str = PROJ_SCHEMA_URL
     spec_url: str = PROJ_SPEC_URL
     description: str = "Coordinate reference system information for geospatial data"
+
+
+_CODE_PATTERN = re.compile(r"^[A-Z]+:[0-9]+$")
 
 
 class Proj(BaseModel):
@@ -58,6 +62,16 @@ class Proj(BaseModel):
 
     model_config = {"extra": "allow", "populate_by_name": True, "serialize_by_alias": True}
 
+    @field_validator("code")
+    @classmethod
+    def validate_code_format(cls, v: str | None) -> str | None:
+        """Validate that code matches the Authority:Code pattern."""
+        if v is not None and not _CODE_PATTERN.match(v):
+            raise ValueError(
+                f"proj:code must match pattern AUTHORITY:CODE (e.g. 'EPSG:4326'), got '{v}'"
+            )
+        return v
+
     @model_validator(mode="after")
     def validate_at_least_one_crs(self) -> Proj:
         """Validate that at least one CRS field is provided."""
@@ -65,6 +79,19 @@ class Proj(BaseModel):
             raise ValueError(
                 "At least one of proj:code, proj:wkt2, or proj:projjson must be provided"
             )
+        return self
+
+    @model_validator(mode="after")
+    def validate_code_resolves(self) -> Proj:
+        """Validate that the code resolves to a known CRS via pyproj."""
+        if self.code is None:
+            return self
+        try:
+            from pyproj import CRS
+
+            CRS.from_authority(*self.code.split(":", 1))
+        except Exception:
+            raise ValueError(f"proj:code '{self.code}' does not resolve to a known CRS") from None
         return self
 
 
