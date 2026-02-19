@@ -1,0 +1,9 @@
+{
+  "zarr_conventions": [
+    {
+      "uuid": "f17cb550-5864-4468-aeb7-f3180cfb622f",
+      "name": "proj:"
+    }
+  ],
+  "proj:wkt2": "GEOGCS[\"WGS 84\",DATUM[\"WGS_1984\",SPHEROID[\"WGS 84\",6378137,298.257223563]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433]]"
+}

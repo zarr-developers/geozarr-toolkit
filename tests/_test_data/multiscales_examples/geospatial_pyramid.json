@@ -1,0 +1,25 @@
+{
+  "zarr_conventions": [
+    {
+      "uuid": "d35379db-88df-4056-af3a-620245f8e347",
+      "name": "multiscales"
+    },
+    {
+      "uuid": "689b58e2-cf7b-45e0-9fff-9cfc0883d6b4",
+      "name": "spatial:"
+    },
+    {
+      "uuid": "f17cb550-5864-4468-aeb7-f3180cfb622f",
+      "name": "proj:"
+    }
+  ],
+  "multiscales": {
+    "layout": [
+      {"asset": "r10m", "transform": {"scale": [1.0, 1.0]}},
+      {"asset": "r20m", "derived_from": "r10m", "transform": {"scale": [2.0, 2.0]}}
+    ]
+  },
+  "spatial:dimensions": ["Y", "X"],
+  "spatial:bbox": [500000.0, 4900000.0, 600000.0, 5000000.0],
+  "proj:code": "EPSG:32633"
+}

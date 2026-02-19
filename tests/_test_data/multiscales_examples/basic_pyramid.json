@@ -1,0 +1,16 @@
+{
+  "zarr_conventions": [
+    {
+      "uuid": "d35379db-88df-4056-af3a-620245f8e347",
+      "name": "multiscales"
+    }
+  ],
+  "multiscales": {
+    "layout": [
+      {"asset": "0"},
+      {"asset": "1", "derived_from": "0", "transform": {"scale": [2.0, 2.0]}},
+      {"asset": "2", "derived_from": "1", "transform": {"scale": [2.0, 2.0]}}
+    ],
+    "resampling_method": "average"
+  }
+}

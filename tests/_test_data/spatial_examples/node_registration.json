@@ -1,0 +1,11 @@
+{
+  "zarr_conventions": [
+    {
+      "uuid": "689b58e2-cf7b-45e0-9fff-9cfc0883d6b4",
+      "name": "spatial:"
+    }
+  ],
+  "spatial:dimensions": ["Y", "X"],
+  "spatial:registration": "node",
+  "spatial:transform": [1.0, 0.0, 0.0, 0.0, -1.0, 90.0]
+}

@@ -1,0 +1,116 @@
+site_name: geozarr-toolkit
+repo_name: zarr-developers/geozarr-toolkit
+repo_url: https://github.com/zarr-developers/geozarr-toolkit
+site_description: GeoZarr convention models, validation, and creation utilities
+site_author: Max Jones
+docs_dir: docs
+
+extra:
+  version:
+    alias: true
+    provider: mike
+
+nav:
+  - "Getting Started": "getting-started.md"
+  - "API Reference": "api/index.md"
+  - "CLI Reference": "cli.md"
+
+watch:
+  - src/geozarr_toolkit
+  - docs
+
+theme:
+  language: en
+  name: material
+  custom_dir: docs/overrides
+  palette:
+    # Palette toggle for automatic mode
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      primary: blue grey
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: blue grey
+      toggle:
+        icon: material/brightness-4
+        name: Switch to system preference
+
+  font:
+    text: Roboto
+    code: Roboto Mono
+
+  features:
+    - content.code.annotate
+    - content.code.copy
+    - navigation.indexes
+    - navigation.instant
+    - navigation.tracking
+    - search.suggest
+    - search.share
+
+extra_css:
+  - overrides/stylesheets/extra.css
+
+plugins:
+  - search
+  - markdown-exec
+  - mkdocstrings:
+      enable_inventory: true
+      handlers:
+        python:
+          paths: [src]
+          options:
+            allow_inspection: true
+            docstring_section_style: list
+            docstring_style: numpy
+            line_length: 80
+            separate_signature: true
+            show_root_heading: true
+            show_signature_annotations: true
+            show_source: false
+            show_symbol_type_toc: true
+            signature_crossrefs: true
+
+          inventories:
+            - https://docs.python.org/3/objects.inv
+            - https://zarr.readthedocs.io/en/stable/objects.inv
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - codehilite:
+      guess_lang: false
+  - def_list
+  - footnotes
+  - md_in_html
+  - pymdownx.arithmatex
+  - pymdownx.betterem
+  - pymdownx.caret:
+      insert: false
+  - pymdownx.details
+  - pymdownx.escapeall:
+      hardbreak: true
+      nbsp: true
+  - pymdownx.magiclink:
+      hide_protocol: true
+      repo_url_shortener: true
+  - pymdownx.smartsymbols
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+  - toc:
+      permalink: true

@@ -1,0 +1,163 @@
+[build-system]
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[project]
+name = "geozarr-toolkit"
+description = "GeoZarr convention models, validation, and creation utilities"
+authors = [
+    {name = "Max Jones", email = "14077947+maxrjones@users.noreply.github.com"}
+]
+requires-python = ">=3.12"
+dependencies = [
+    "zarr>=3.0.8",
+    "xarray",
+    "rioxarray",
+    "cf-xarray",
+    "cftime",
+    "dask",
+    "pydantic>=2.12",
+    "pydantic-zarr>=0.8.0",
+    "pyproj>=3.7.0",
+    "structlog>=25.5.0",
+    "typing-extensions>=4.15.0",
+    "async-geotiff",
+    "obstore",
+]
+dynamic = ["version"]
+readme = "README.md"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Information Technology",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Operating System :: Unix",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+license = {text = "MIT License"}
+keywords = ["Python", "geospatial", "zarr", "geozarr", "conventions"]
+
+[project.scripts]
+geozarr = "geozarr_toolkit.cli:main"
+
+[tool.hatch]
+version.source = "vcs"
+build.hooks.vcs.version-file = "src/geozarr_toolkit/_version.py"
+
+[dependency-groups]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "mypy>=1.0.0",
+    "pre-commit>=3.0.0",
+    "ruff>=0.4.0",
+]
+test = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "pytest-mock>=3.10.0",
+    "jsondiff>=2.0.0",
+]
+docs = [
+    "mkdocs>=1.5.0",
+    "mkdocs-material>=9.0.0",
+    "mkdocstrings[python]>=0.24.0",
+    "markdown-exec[ansi]>=1.7.0",
+    "rich",
+]
+io = [
+    "netcdf4",
+    "pooch>=1.8.2",
+    "rasterio>=1.4.3",
+    "pystac-client",
+    "earthaccess",
+    "rio-cogeo",
+    "rio-tiler",
+    "xproj",
+]
+
+[tool.uv]
+default-groups = ["dev", "test"]
+
+[tool.ruff]
+line-length = 100
+force-exclude = true
+extend-exclude = [
+    ".git",
+    ".mypy_cache",
+    ".ruff_cache",
+    ".venv",
+    "__pypackages__",
+    "_build",
+    "build",
+    "dist",
+    "venv",
+    "docs",
+]
+
+[tool.ruff.lint]
+extend-select = [
+    "ANN",  # flake8-annotations
+    "B",    # flake8-bugbear
+    "C4",   # flake8-comprehensions
+    "FA",   # flake8-future-annotations
+    "I",    # isort
+    "PERF", # Perflint
+    "PT",   # flake8-pytest-style
+    "RUF",
+    "SIM",  # flake8-simplify
+    "TC",   # flake8-type-checking
+    "UP",   # pyupgrade
+    "W",    # pycodestyle warnings
+]
+
+ignore = [
+    "ANN001",  # Missing type annotation for function argument
+    "ANN401",  # Dynamically typed Any
+]
+
+[tool.mypy]
+python_version = "3.12"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+strict_equality = true
+
+[[tool.mypy.overrides]]
+module = ["zarr.*", "xarray.*", "rioxarray.*", "cf_xarray.*", "dask.*", "pyproj.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-ra -q --strict-markers --strict-config"
+testpaths = ["tests"]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "network: marks tests that require network access",
+]
+
+[tool.coverage.run]
+source = ["src"]
+omit = ["tests/*"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]
