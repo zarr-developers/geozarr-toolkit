@@ -115,6 +115,18 @@ geozarr info data.zarr
 geozarr info data.zarr --json
 ```
 
+## Online validator
+
+Run a local web app to validate remote Zarr stores via URL:
+
+```bash
+uv sync --group web
+uv run --group web uvicorn geozarr_toolkit.application.app:app --reload
+# Visit http://localhost:8000
+```
+
+Paste a Zarr store URL (https://, s3://, gs://, az://) and optionally a group path to validate against GeoZarr conventions.
+
 ## Development
 
 ```bash
