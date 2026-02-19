@@ -49,7 +49,7 @@ pip install "geozarr-toolkit @ git+https://github.com/zarr-developers/geozarr-to
 
 ### Code Attribution
 
-The Python convention models (`Spatial`, `Proj`, `Multiscales`, etc.) follow patterns established in [eopf-geozarr](https://github.com/EOPF-Explorer/data-model), part of the EOPF (Earth Observation Processing Framework) ecosystem.
+This library originated in [geozarr-examples](https://github.com/developmentseed/geozarr-examples) by [Development Seed](https://developmentseed.org/). The Python convention models (`Spatial`, `Proj`, `Multiscales`, etc.) follow patterns established in [eopf-geozarr](https://github.com/EOPF-Explorer/data-model), part of the EOPF (Earth Observation Processing Framework) ecosystem.
 
 ## License
 
