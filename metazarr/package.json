@@ -1,0 +1,26 @@
+{
+  "name": "metazarr",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Client-side Zarr metadata explorer and GeoZarr convention validator",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "ajv": "^8.17.1",
+    "zarrita": "^0.5.0"
+  },
+  "devDependencies": {
+    "vite": "^6.0.0",
+    "vitest": "^3.0.0"
+  },
+  "license": "MIT"
+}

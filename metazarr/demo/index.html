@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>metazarr — Zarr Metadata Explorer</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <div class="header-content">
+      <h1>metazarr</h1>
+      <form id="open-form">
+        <input type="url" id="url-input" placeholder="https://example.com/data.zarr" required>
+        <button type="submit" id="open-btn">Open</button>
+      </form>
+      <div id="status"></div>
+    </div>
+  </header>
+
+  <main>
+    <aside id="tree-panel">
+      <div id="tree-container">
+        <p class="placeholder-text">Enter a Zarr store URL to explore its hierarchy.</p>
+      </div>
+      <div id="add-path-container" hidden>
+        <input type="text" id="add-path-input" placeholder="/path/to/node">
+        <button id="add-path-btn">Add</button>
+      </div>
+    </aside>
+
+    <section id="detail-panel">
+      <p class="placeholder-text">Select a node from the tree to view its metadata and conventions.</p>
+    </section>
+  </main>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

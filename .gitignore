@@ -39,3 +39,5 @@ uv.lock
 
 # Docs
 site/*
+
+node_modules/
