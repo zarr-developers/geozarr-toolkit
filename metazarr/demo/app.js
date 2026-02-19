@@ -23,11 +23,24 @@ const addPathBtn = document.getElementById("add-path-btn");
 let currentStore = null;
 let currentTree = null;
 
+// --- URL state ---
+
+function updateUrlParams(storeUrl, nodePath) {
+  const params = new URLSearchParams();
+  if (storeUrl) params.set("url", storeUrl);
+  if (nodePath) params.set("node", nodePath);
+  const qs = params.toString();
+  history.replaceState(null, "", qs ? `?${qs}` : location.pathname);
+}
+
+function getUrlParams() {
+  const params = new URLSearchParams(location.search);
+  return { url: params.get("url"), node: params.get("node") };
+}
+
 // --- Form submission ---
 
-form.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const url = urlInput.value.trim();
+async function openStoreFromUrl(url, autoSelectNode) {
   if (!url) return;
 
   openBtn.disabled = true;
@@ -77,8 +90,23 @@ form.addEventListener("submit", async (e) => {
       addPathContainer.hidden = false;
     }
 
-    detailPanel.innerHTML =
-      '<p class="placeholder-text">Select a node from the tree to view its metadata and conventions.</p>';
+    updateUrlParams(url, null);
+
+    // Auto-select node from URL if provided
+    if (autoSelectNode && currentTree) {
+      const { findNode } = await import("../src/hierarchy.js");
+      const target = findNode(currentTree, autoSelectNode);
+      if (target) {
+        onNodeSelect(target);
+        highlightNode(treeContainer, target.path);
+      } else {
+        detailPanel.innerHTML =
+          '<p class="placeholder-text">Select a node from the tree to view its metadata and conventions.</p>';
+      }
+    } else {
+      detailPanel.innerHTML =
+        '<p class="placeholder-text">Select a node from the tree to view its metadata and conventions.</p>';
+    }
   } catch (err) {
     statusEl.textContent = "";
     treeContainer.innerHTML = `<div class="error-banner" style="margin: 0.5rem;">Failed to open store: ${escapeHtml(err.message)}</div>`;
@@ -86,6 +114,12 @@ form.addEventListener("submit", async (e) => {
   } finally {
     openBtn.disabled = false;
   }
+}
+
+form.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const url = urlInput.value.trim();
+  openStoreFromUrl(url, null);
 });
 
 // --- Node selection ---
@@ -94,6 +128,7 @@ function onNodeSelect(node) {
   highlightNode(treeContainer, node.path);
   const conventions = detectConventions(node.attrs);
   renderDetail(node, conventions, detailPanel);
+  updateUrlParams(urlInput.value.trim(), node.path);
 }
 
 // --- Manual path addition ---
@@ -134,4 +169,14 @@ function escapeHtml(str) {
   const div = document.createElement("div");
   div.textContent = str;
   return div.innerHTML;
+}
+
+// --- Restore from URL on load ---
+
+{
+  const { url, node } = getUrlParams();
+  if (url) {
+    urlInput.value = url;
+    openStoreFromUrl(url, node);
+  }
 }
