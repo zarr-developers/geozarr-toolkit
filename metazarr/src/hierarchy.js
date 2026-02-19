@@ -12,7 +12,7 @@
  * @property {object|null|undefined} meta - Raw metadata (.zarray for v2, zarr.json for v3)
  */
 
-import * as zarr from "zarrita";
+import { root, open } from "zarrita";
 
 /**
  * Build a full hierarchy tree from a consolidated (Listable) store.
@@ -93,7 +93,7 @@ export function buildTreeFromV3(v3Entries) {
 
 export async function buildTreeFromCrawl(store, entries) {
   // Crawl entries have path + kind hint. "unknown" kind means zarr.json exists
-  // but we don't know if it's a group or array yet — zarr.open will figure it out.
+  // but we don't know if it's a group or array yet — open will figure it out.
   const contents = entries.map((e) => ({
     path: e.path,
     kind: e.kind === "unknown" ? undefined : e.kind,
@@ -229,12 +229,12 @@ async function readRawMeta(store, path) {
  * @returns {Promise<TreeNode>}
  */
 async function openNodeFromStore(store, path, hintKind) {
-  const location = zarr.root(store).resolve(path);
+  const location = root(store).resolve(path);
 
   try {
     const node = hintKind
-      ? await zarr.open(location, { kind: hintKind })
-      : await zarr.open(location);
+      ? await open(location, { kind: hintKind })
+      : await open(location);
 
     /** @type {TreeNode} */
     const treeNode = {

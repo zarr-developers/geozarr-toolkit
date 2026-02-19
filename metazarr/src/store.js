@@ -23,7 +23,7 @@
  * @property {import("./crawl.js").CrawlEntry[]|null} crawledEntries - Crawled entries
  */
 
-import * as zarr from "zarrita";
+import { FetchStore, withConsolidated } from "zarrita";
 import { tryV3Consolidated } from "./consolidated-v3.js";
 import { tryCrawlDirectory } from "./crawl.js";
 
@@ -37,7 +37,7 @@ import { tryCrawlDirectory } from "./crawl.js";
  */
 export async function openStore(url, options = {}) {
   const normalizedUrl = url.replace(/\/+$/, "");
-  const fetchStore = new zarr.FetchStore(normalizedUrl);
+  const fetchStore = new FetchStore(normalizedUrl);
 
   // Strategy 1: v3 inline consolidated metadata
   const v3Result = await tryV3Consolidated(normalizedUrl);
@@ -54,7 +54,7 @@ export async function openStore(url, options = {}) {
 
   // Strategy 2: v2 consolidated metadata (.zmetadata)
   try {
-    const listable = await zarr.withConsolidated(fetchStore);
+    const listable = await withConsolidated(fetchStore);
     return {
       store: listable,
       url: normalizedUrl,
