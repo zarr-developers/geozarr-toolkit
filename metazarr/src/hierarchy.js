@@ -116,10 +116,12 @@ async function buildTreeFromContents(store, contents, zarrFormat = null) {
   /** @type {Map<string, TreeNode>} */
   const nodes = new Map();
 
-  // Open each node to get attributes and array metadata
-  for (const entry of contents) {
-    const node = await openNodeFromStore(store, entry.path, entry.kind, zarrFormat);
-    nodes.set(entry.path, node);
+  // Open all nodes in parallel to get attributes and array metadata
+  const opened = await Promise.all(
+    contents.map((entry) => openNodeFromStore(store, entry.path, entry.kind, zarrFormat)),
+  );
+  for (let i = 0; i < contents.length; i++) {
+    nodes.set(contents[i].path, opened[i]);
   }
 
   // Ensure root exists
