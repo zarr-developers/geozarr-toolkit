@@ -1,9 +1,8 @@
 /**
- * AJV-based JSON Schema validation engine.
+ * JSON Schema validation engine using pre-compiled AJV standalone validators.
  *
- * Supports both Draft-07 and Draft 2020-12 schemas, auto-detected from the
- * schema's `$schema` property. External `$ref` schemas (e.g. PROJJSON) are
- * fetched and pre-loaded automatically.
+ * Convention schemas are compiled at build time (scripts/compile-validators.js)
+ * so no runtime eval() is needed, allowing strict Content-Security-Policy.
  *
  * @typedef {Object} ValidationError
  * @property {string} path - JSON pointer to the invalid value (instancePath)
@@ -22,38 +21,37 @@
  * @property {ContainsFailure[]} containsFailures - Contains check failures with best match info
  */
 
-import Ajv from "ajv";
-import Ajv2020 from "ajv/dist/2020.js";
-import { fetchSchema, resolveExternalRefs } from "./schema-cache.js";
+import validators from "./generated/index.js";
 
 /**
  * Validate a Zarr node's full metadata document against a convention schema.
+ *
+ * Uses pre-compiled AJV standalone validators for known conventions.
  *
  * @param {object} nodeMetadata - Full node document: { zarr_format, node_type, attributes }
  * @param {string} schemaUrl - URL to the convention's JSON Schema
  * @returns {Promise<ValidationResult>}
  */
 export async function validateNode(nodeMetadata, schemaUrl) {
-  const schema = await fetchSchema(schemaUrl);
-
-  // Pick AJV version based on the schema's $schema dialect
-  const is2020 =
-    typeof schema.$schema === "string" && schema.$schema.includes("2020-12");
-  const ajv = is2020
-    ? new Ajv2020({ allErrors: true })
-    : new Ajv({ allErrors: true });
-
-  // Pre-load any external $ref schemas (e.g. PROJJSON for geo-proj)
-  const externalRefs = await resolveExternalRefs(schema);
-  for (const [url, refSchema] of externalRefs) {
-    try {
-      ajv.addSchema(refSchema, url);
-    } catch {
-      // Schema with this URI may already be registered (e.g. by a nested ref)
-    }
+  const validate = validators.get(schemaUrl);
+  if (!validate) {
+    throw new Error(`No pre-compiled validator for schema: ${schemaUrl}`);
   }
 
-  const validate = ajv.compile(schema);
+  return runValidation(validate, nodeMetadata);
+}
+
+/**
+ * Run validation using a provided AJV validate function.
+ *
+ * This is the core validation logic, separated from schema lookup so it can
+ * be used directly in tests with runtime-compiled AJV validators.
+ *
+ * @param {Function} validate - An AJV validate function (compiled with allErrors: true)
+ * @param {object} nodeMetadata - Full node document to validate
+ * @returns {ValidationResult}
+ */
+export function runValidation(validate, nodeMetadata) {
   const valid = validate(nodeMetadata);
 
   if (valid) {

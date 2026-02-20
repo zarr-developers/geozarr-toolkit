@@ -41,3 +41,6 @@ uv.lock
 site/*
 
 node_modules/
+
+# Auto-generated AJV standalone validators
+metazarr/src/generated/

@@ -1,6 +1,12 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { validateNode, buildNodeDocument } from "../src/validator.js";
-import { clearCache } from "../src/schema-cache.js";
+import { describe, it, expect } from "vitest";
+import Ajv from "ajv";
+import { runValidation, buildNodeDocument } from "../src/validator.js";
+
+/**
+ * Tests use runtime AJV to compile test schemas, then pass the validate
+ * function to runValidation(). This avoids needing pre-compiled validators
+ * for test-only schemas while exercising the same error processing logic.
+ */
 
 // Minimal geo-proj schema (Draft-07) for testing
 const PROJ_SCHEMA = {
@@ -19,23 +25,6 @@ const PROJ_SCHEMA = {
         },
       },
       required: ["zarr_conventions"],
-    },
-  },
-  required: ["zarr_format", "node_type", "attributes"],
-};
-
-// Minimal CF-like schema (Draft 2020-12) for testing
-const CF_SCHEMA = {
-  $schema: "https://json-schema.org/draft/2020-12/schema",
-  type: "object",
-  properties: {
-    zarr_format: { type: "integer" },
-    node_type: { type: "string" },
-    attributes: {
-      type: "object",
-      properties: {
-        Conventions: { type: "string" },
-      },
     },
   },
   required: ["zarr_format", "node_type", "attributes"],
@@ -79,17 +68,15 @@ const CONTAINS_REF_SCHEMA = {
   },
 };
 
-beforeEach(() => {
-  clearCache();
-  vi.restoreAllMocks();
-});
+/** Compile a test schema with runtime AJV. */
+function compile(schema) {
+  const ajv = new Ajv({ allErrors: true });
+  return ajv.compile(schema);
+}
 
-describe("validateNode", () => {
-  it("validates a passing document against Draft-07 schema", async () => {
-    vi.spyOn(globalThis, "fetch").mockResolvedValue(
-      new Response(JSON.stringify(PROJ_SCHEMA), { status: 200 }),
-    );
-
+describe("runValidation", () => {
+  it("validates a passing document against Draft-07 schema", () => {
+    const validate = compile(PROJ_SCHEMA);
     const doc = {
       zarr_format: 3,
       node_type: "array",
@@ -101,17 +88,14 @@ describe("validateNode", () => {
       },
     };
 
-    const result = await validateNode(doc, "https://example.com/proj-schema.json");
+    const result = runValidation(validate, doc);
     expect(result.valid).toBe(true);
     expect(result.errors).toEqual([]);
     expect(result.containsFailures).toEqual([]);
   });
 
-  it("returns attribute errors for a failing document", async () => {
-    vi.spyOn(globalThis, "fetch").mockResolvedValue(
-      new Response(JSON.stringify(PROJ_SCHEMA), { status: 200 }),
-    );
-
+  it("returns attribute errors for a failing document", () => {
+    const validate = compile(PROJ_SCHEMA);
     const doc = {
       zarr_format: 3,
       node_type: "array",
@@ -123,60 +107,27 @@ describe("validateNode", () => {
       },
     };
 
-    const result = await validateNode(doc, "https://example.com/proj-schema.json");
+    const result = runValidation(validate, doc);
     expect(result.valid).toBe(false);
     expect(result.errors.length).toBeGreaterThan(0);
     expect(result.errors.some((e) => e.message.includes("pattern") && e.message.includes("^[A-Z]+:[0-9]+$"))).toBe(true);
     expect(result.containsFailures).toEqual([]);
   });
 
-  it("validates against a Draft 2020-12 schema", async () => {
-    vi.spyOn(globalThis, "fetch").mockResolvedValue(
-      new Response(JSON.stringify(CF_SCHEMA), { status: 200 }),
-    );
-
-    const doc = {
-      zarr_format: 3,
-      node_type: "array",
-      attributes: {
-        Conventions: "CF-1.11",
-      },
-    };
-
-    const result = await validateNode(doc, "https://example.com/cf-schema.json");
-    expect(result.valid).toBe(true);
-  });
-
-  it("fails when required fields are missing", async () => {
-    vi.spyOn(globalThis, "fetch").mockResolvedValue(
-      new Response(JSON.stringify(PROJ_SCHEMA), { status: 200 }),
-    );
-
+  it("fails when required fields are missing", () => {
+    const validate = compile(PROJ_SCHEMA);
     const doc = {
       zarr_format: 3,
       // missing node_type and attributes
     };
 
-    const result = await validateNode(doc, "https://example.com/proj-schema.json");
+    const result = runValidation(validate, doc);
     expect(result.valid).toBe(false);
     expect(result.errors.length).toBeGreaterThan(0);
   });
 
-  it("throws on fetch failure", async () => {
-    vi.spyOn(globalThis, "fetch").mockResolvedValue(
-      new Response("Not Found", { status: 404 }),
-    );
-
-    await expect(
-      validateNode({}, "https://example.com/missing.json"),
-    ).rejects.toThrow("Failed to fetch schema");
-  });
-
-  it("returns containsFailure with best match and item-relative errors", async () => {
-    vi.spyOn(globalThis, "fetch").mockResolvedValue(
-      new Response(JSON.stringify(CONTAINS_REF_SCHEMA), { status: 200 }),
-    );
-
+  it("returns containsFailure with best match and item-relative errors", () => {
+    const validate = compile(CONTAINS_REF_SCHEMA);
     const doc = {
       zarr_format: 3,
       node_type: "group",
@@ -189,7 +140,7 @@ describe("validateNode", () => {
       },
     };
 
-    const result = await validateNode(doc, "https://example.com/spatial-schema.json");
+    const result = runValidation(validate, doc);
     expect(result.valid).toBe(false);
 
     // Should have a contains failure, not flat errors
@@ -212,11 +163,8 @@ describe("validateNode", () => {
     expect(result.errors).toEqual([]);
   });
 
-  it("returns both containsFailure and attribute errors when both fail", async () => {
-    vi.spyOn(globalThis, "fetch").mockResolvedValue(
-      new Response(JSON.stringify(CONTAINS_REF_SCHEMA), { status: 200 }),
-    );
-
+  it("returns both containsFailure and attribute errors when both fail", () => {
+    const validate = compile(CONTAINS_REF_SCHEMA);
     const doc = {
       zarr_format: 3,
       node_type: "group",
@@ -228,7 +176,7 @@ describe("validateNode", () => {
       },
     };
 
-    const result = await validateNode(doc, "https://example.com/spatial-schema.json");
+    const result = runValidation(validate, doc);
     expect(result.valid).toBe(false);
 
     // Contains failure: no zarr_conventions entry matched
@@ -239,11 +187,8 @@ describe("validateNode", () => {
     expect(result.errors.some((e) => e.message.includes("spatial:dimensions"))).toBe(true);
   });
 
-  it("filters out non-matching items from contains failures", async () => {
-    vi.spyOn(globalThis, "fetch").mockResolvedValue(
-      new Response(JSON.stringify(CONTAINS_REF_SCHEMA), { status: 200 }),
-    );
-
+  it("filters out non-matching items from contains failures", () => {
+    const validate = compile(CONTAINS_REF_SCHEMA);
     // 3 conventions — only index 1 is close to matching spatial
     const doc = {
       zarr_format: 3,
@@ -258,7 +203,7 @@ describe("validateNode", () => {
       },
     };
 
-    const result = await validateNode(doc, "https://example.com/spatial-schema.json");
+    const result = runValidation(validate, doc);
     expect(result.valid).toBe(false);
     expect(result.containsFailures).toHaveLength(1);
 
