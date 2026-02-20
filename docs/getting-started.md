@@ -258,5 +258,5 @@ print(json.dumps(attrs, indent=2))
 
 ## Next Steps
 
-- See the [API Reference](api/index.md) for complete documentation
+- See the API reference for complete documentation
 - See the [CLI Reference](cli.md) for command-line usage

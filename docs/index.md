@@ -25,7 +25,7 @@ attrs = create_geozarr_attrs(
 print(json.dumps(attrs, indent=2))
 ```
 
-See the [Getting Started guide](getting-started.md) for more details, or browse the [API Reference](api/index.md).
+See the [Getting Started guide](getting-started.md) for more details, or browse the API reference pages.
 
 ## Installation
 

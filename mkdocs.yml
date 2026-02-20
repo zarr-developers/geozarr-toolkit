@@ -13,8 +13,13 @@ extra:
 nav:
   - "Home": "index.md"
   - "Getting Started": "getting-started.md"
-  - "API Reference": "api/index.md"
+  - "API Reference":
+    - "Pydantic Models": "api/pydantic.md"
+    - "Validation": "api/validation.md"
+    - "Creation": "api/creation.md"
+    - "Conversion": "api/conversion.md"
   - "CLI Reference": "cli.md"
+  - "Web API": "web-api.md"
 
 watch:
   - src/geozarr_toolkit
