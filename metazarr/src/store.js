@@ -4,8 +4,8 @@
  * Tries five strategies in order:
  * 1. Zarr v3 inline consolidated metadata (root zarr.json)
  * 2. Zarr v2 consolidated metadata (.zmetadata)
- * 3. HTML directory crawling (S3-backed HTTP endpoints)
- * 4. S3 XML listing (ListObjectsV2 for public buckets)
+ * 3. S3 XML listing (ListObjectsV2 for public buckets)
+ * 4. HTML directory crawling (S3-backed HTTP endpoints)
  * 5. Manual path entry
  *
  * TODO: v3 consolidated metadata support should be contributed upstream to
@@ -102,24 +102,8 @@ export async function openStore(url, options = {}) {
     // No v2 consolidated metadata
   }
 
-  // Strategy 3: HTML directory crawling
-  const entries = await tryCrawlDirectory(normalizedUrl, {
-    maxNodes,
-    onProgress: options.onProgress,
-  });
-  if (entries) {
-    return {
-      store: fetchStore,
-      url: normalizedUrl,
-      discovery: "crawled",
-      zarrFormat: entries[0]?.zarrFormat ?? null,
-      v3Entries: null,
-      crawledEntries: entries,
-      truncated: entries.length >= maxNodes,
-    };
-  }
-
-  // Strategy 4: S3 XML listing
+  // Strategy 3: S3 XML listing (tried before HTML crawl — instant no-op
+  // for non-S3 URLs, avoids a wasted HTML fetch for S3 URLs)
   const s3Entries = await tryS3List(normalizedUrl, {
     maxNodes,
     onProgress: options.onProgress,
@@ -133,6 +117,23 @@ export async function openStore(url, options = {}) {
       v3Entries: null,
       crawledEntries: s3Entries,
       truncated: s3Entries.length >= maxNodes,
+    };
+  }
+
+  // Strategy 4: HTML directory crawling
+  const entries = await tryCrawlDirectory(normalizedUrl, {
+    maxNodes,
+    onProgress: options.onProgress,
+  });
+  if (entries) {
+    return {
+      store: fetchStore,
+      url: normalizedUrl,
+      discovery: "crawled",
+      zarrFormat: entries[0]?.zarrFormat ?? null,
+      v3Entries: null,
+      crawledEntries: entries,
+      truncated: entries.length >= maxNodes,
     };
   }
 
