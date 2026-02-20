@@ -552,3 +552,98 @@ main {
   color: #856404;
   font-size: 0.85rem;
 }
+
+/* --- Mobile back button (hidden on desktop) --- */
+
+#back-btn {
+  display: none;
+}
+
+/* --- Responsive --- */
+
+@media (max-width: 768px) {
+  .header-content {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  h1 {
+    font-size: 1.1rem;
+  }
+
+  /* Push GitHub icon to far right of the first row */
+  .github-link {
+    margin-left: auto;
+  }
+
+  /* URL form takes full width on its own row */
+  #open-form {
+    order: 10;
+    width: 100%;
+    flex: none;
+  }
+
+  /* Examples take full width on their own row */
+  #examples {
+    order: 11;
+    width: 100%;
+  }
+
+  /* Status takes full width */
+  #status {
+    order: 12;
+    width: 100%;
+    white-space: normal;
+  }
+
+  /* Stack panels vertically */
+  main {
+    flex-direction: column;
+  }
+
+  #tree-panel {
+    width: 100%;
+    min-width: 0;
+    max-height: 45vh;
+    border-right: none;
+    border-bottom: 1px solid #e0e0e0;
+  }
+
+  #detail-panel {
+    padding: 1rem;
+  }
+
+  /* When a node is selected on mobile, hide tree and show detail */
+  body.mobile-detail-view #tree-panel {
+    display: none;
+  }
+
+  body.mobile-detail-view #detail-panel {
+    flex: 1;
+  }
+
+  /* Back button visible on mobile when in detail view */
+  body.mobile-detail-view #back-btn {
+    display: inline-block;
+    padding: 0.3rem 0.6rem;
+    font-size: 0.8rem;
+    background: #f0f4ff;
+    color: #4a7dff;
+    border: 1px solid #d0daf0;
+    margin-bottom: 0.75rem;
+  }
+
+  body.mobile-detail-view #back-btn:hover {
+    background: #e0eaff;
+  }
+
+  /* Smaller touch targets for tree nodes */
+  .tree-node {
+    padding: 0.35rem 0.75rem;
+  }
+
+  /* Hide convention labels in tree on small screens */
+  .tree-node .conv-label {
+    display: none;
+  }
+}

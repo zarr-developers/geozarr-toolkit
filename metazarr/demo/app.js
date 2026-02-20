@@ -150,6 +150,23 @@ document.querySelectorAll(".example-chip").forEach((chip) => {
   });
 });
 
+// --- Mobile panel switching ---
+
+const backBtn = document.getElementById("back-btn");
+const mobileQuery = window.matchMedia("(max-width: 768px)");
+
+function showDetailView() {
+  if (mobileQuery.matches) {
+    document.body.classList.add("mobile-detail-view");
+  }
+}
+
+function showTreeView() {
+  document.body.classList.remove("mobile-detail-view");
+}
+
+backBtn.addEventListener("click", showTreeView);
+
 // --- Node selection ---
 
 function onNodeSelect(node) {
@@ -157,6 +174,7 @@ function onNodeSelect(node) {
   const conventions = detectConventions(node.attrs);
   renderDetail(node, conventions, detailPanel);
   updateUrlParams(urlInput.value.trim(), node.path);
+  showDetailView();
 }
 
 // --- Manual path addition ---
