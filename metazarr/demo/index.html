@@ -14,6 +14,11 @@
         <input type="text" id="url-input" placeholder="https://example.com/data.zarr or s3://bucket/key" required>
         <button type="submit" id="open-btn">Open</button>
       </form>
+      <div id="examples">
+        <span class="examples-label">Examples:</span>
+        <button class="example-chip" data-url="https://s3.explorer.eopf.copernicus.eu/esa-zarr-sentinel-explorer-fra/tests-output/sentinel-2-l2a/S2B_MSIL2A_20260216T142149_N0512_R096_T25WFV_20260216T165051.zarr">EOPF</button>
+        <button class="example-chip" data-url="s3://us-west-2.opendata.source.coop/pangeo/geozarr-examples/TCI.zarr">Sentinel-2</button>
+      </div>
       <div id="status"></div>
     </div>
   </header>

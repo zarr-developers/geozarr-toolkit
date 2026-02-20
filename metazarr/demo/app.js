@@ -123,6 +123,16 @@ form.addEventListener("submit", (e) => {
   openStoreFromUrl(url, null);
 });
 
+// --- Example chips ---
+
+document.querySelectorAll(".example-chip").forEach((chip) => {
+  chip.addEventListener("click", () => {
+    const url = chip.dataset.url;
+    urlInput.value = url;
+    openStoreFromUrl(url, null);
+  });
+});
+
 // --- Node selection ---
 
 function onNodeSelect(node) {

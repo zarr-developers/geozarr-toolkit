@@ -71,6 +71,36 @@ button {
 button:hover { background: #3a6ae0; }
 button:disabled { background: #a0b4e0; cursor: not-allowed; }
 
+#examples {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+.examples-label {
+  font-size: 0.75rem;
+  color: #888;
+  white-space: nowrap;
+}
+
+.example-chip {
+  padding: 0.2rem 0.55rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background: #f0f4ff;
+  color: #4a7dff;
+  border: 1px solid #d0daf0;
+  border-radius: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.example-chip:hover {
+  background: #e0eaff;
+  border-color: #4a7dff;
+}
+
 #status {
   font-size: 0.8rem;
   color: #666;
