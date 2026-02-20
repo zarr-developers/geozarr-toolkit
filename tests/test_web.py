@@ -117,10 +117,3 @@ async def test_url_mode_nonexistent(client: AsyncClient) -> None:
 async def test_missing_url_and_attributes(client: AsyncClient) -> None:
     resp = await client.post("/api/validate", json={})
     assert resp.status_code == 422
-
-
-@pytest.mark.anyio
-async def test_index_page(client: AsyncClient) -> None:
-    resp = await client.get("/")
-    assert resp.status_code == 200
-    assert "GeoZarr Validator" in resp.text

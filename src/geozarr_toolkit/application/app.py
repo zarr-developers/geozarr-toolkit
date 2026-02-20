@@ -2,14 +2,11 @@
 
 from __future__ import annotations
 
-from pathlib import Path
 from typing import Any
 
 import structlog
 import zarr
 from fastapi import FastAPI
-from fastapi.responses import FileResponse
-from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, model_validator
 
 from geozarr_toolkit.helpers.validation import (
@@ -21,10 +18,6 @@ from geozarr_toolkit.helpers.validation import (
 logger = structlog.get_logger()
 
 app = FastAPI(title="GeoZarr Validator", description="Validate GeoZarr-compliant Zarr stores")
-
-# Static files live at the project root under web/static/, not inside the package
-_PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent
-STATIC_DIR = _PROJECT_ROOT / "web" / "static"
 
 
 class ValidateRequest(BaseModel):
@@ -135,12 +128,3 @@ async def validate(request: ValidateRequest) -> ValidateResponse:
         return _validate_url(request.url, request.group)
     assert request.attributes is not None
     return _validate_attributes(request.attributes)
-
-
-@app.get("/")
-async def index() -> FileResponse:
-    """Serve the frontend."""
-    return FileResponse(STATIC_DIR / "index.html")
-
-
-app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
