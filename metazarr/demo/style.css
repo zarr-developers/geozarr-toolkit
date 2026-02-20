@@ -514,6 +514,36 @@ main {
   font-size: 0.9rem;
 }
 
+.error-banner--cors p {
+  margin: 0.35rem 0;
+}
+
+.error-banner--cors code {
+  background: rgba(0, 0, 0, 0.08);
+  padding: 0.1rem 0.3rem;
+  border-radius: 3px;
+  font-size: 0.82rem;
+}
+
+.error-banner--cors details {
+  margin-top: 0.5rem;
+}
+
+.error-banner--cors summary {
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.error-banner--cors ul {
+  margin: 0.35rem 0 0 1.25rem;
+  font-size: 0.85rem;
+}
+
+.error-banner--cors li {
+  margin-bottom: 0.2rem;
+}
+
 .no-conventions {
   background: #fff3cd;
   border: 1px solid #ffeeba;

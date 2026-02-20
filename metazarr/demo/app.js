@@ -2,7 +2,7 @@
  * Main application — wires store opening, tree rendering, and detail panel.
  */
 
-import { openStore } from "../src/store.js";
+import { openStore, CorsError } from "../src/store.js";
 import { buildTree, buildTreeFromV3, buildTreeFromCrawl, openNode, insertNode } from "../src/hierarchy.js";
 import { detectConventions } from "../src/conventions.js";
 import { renderTree, highlightNode } from "./tree.js";
@@ -110,7 +110,24 @@ async function openStoreFromUrl(url, autoSelectNode) {
     }
   } catch (err) {
     statusEl.textContent = "";
-    treeContainer.innerHTML = `<div class="error-banner" style="margin: 0.5rem;">Failed to open store: ${escapeHtml(err.message)}</div>`;
+    if (err instanceof CorsError) {
+      const hostname = new URL(err.url).hostname;
+      treeContainer.innerHTML = `<div class="error-banner error-banner--cors" style="margin: 0.5rem;">
+        <strong>CORS Error</strong>
+        <p>The server at <code>${escapeHtml(hostname)}</code> does not allow requests from this site.</p>
+        <p>This is a restriction set by the remote server, not a problem with the URL itself. The server needs to include an <code>Access-Control-Allow-Origin</code> header in its responses.</p>
+        <details>
+          <summary>What can I do?</summary>
+          <ul>
+            <li>Ask the data provider to enable CORS on their server</li>
+            <li>Use a store hosted on a CORS-enabled server (e.g. S3 with public access)</li>
+            <li>Run metazarr locally where CORS restrictions don't apply</li>
+          </ul>
+        </details>
+      </div>`;
+    } else {
+      treeContainer.innerHTML = `<div class="error-banner" style="margin: 0.5rem;">Failed to open store: ${escapeHtml(err.message)}</div>`;
+    }
     detailPanel.innerHTML = "";
   } finally {
     openBtn.disabled = false;

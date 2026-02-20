@@ -127,6 +127,26 @@ export async function openStore(url, options = {}) {
     };
   }
 
+  // All discovery strategies failed — verify the store is reachable at all.
+  // CORS failures silently return null from each strategy above, so we do an
+  // explicit check to surface a helpful error instead of silently falling
+  // through to manual mode with a broken store.
+  try {
+    const probe = await fetch(normalizedUrl, { method: "HEAD" });
+    // If HEAD isn't allowed, try GET — some servers reject HEAD
+    if (!probe.ok) {
+      const getProbe = await fetch(normalizedUrl);
+      if (!getProbe.ok && getProbe.status !== 404) {
+        throw new Error(`Server returned HTTP ${getProbe.status}`);
+      }
+    }
+  } catch (err) {
+    if (err instanceof TypeError) {
+      throw new CorsError(normalizedUrl);
+    }
+    throw err;
+  }
+
   // Strategy 5: manual
   return {
     store: fetchStore,
@@ -136,4 +156,19 @@ export async function openStore(url, options = {}) {
     v3Entries: null,
     crawledEntries: null,
   };
+}
+
+/**
+ * Error thrown when a store URL is unreachable due to CORS restrictions.
+ */
+export class CorsError extends Error {
+  constructor(url) {
+    const origin = typeof location !== "undefined" ? location.origin : "this origin";
+    super(
+      `The server at ${new URL(url).hostname} does not allow requests from ${origin}. ` +
+      `This is a CORS (Cross-Origin Resource Sharing) restriction set by the server.`
+    );
+    this.name = "CorsError";
+    this.url = url;
+  }
 }
