@@ -34,8 +34,8 @@ def proj_attrs() -> dict[str, Any]:
 
 
 @pytest.mark.anyio
-async def test_json_mode_valid_spatial(client: AsyncClient, spatial_attrs: dict) -> None:
-    resp = await client.post("/api/validate", json={"attributes": spatial_attrs})
+async def test_validate_attrs_valid_spatial(client: AsyncClient, spatial_attrs: dict) -> None:
+    resp = await client.post("/api/validate/attributes", json={"attributes": spatial_attrs})
     assert resp.status_code == 200
     data = resp.json()
     assert data["valid"] is True
@@ -44,11 +44,11 @@ async def test_json_mode_valid_spatial(client: AsyncClient, spatial_attrs: dict)
 
 
 @pytest.mark.anyio
-async def test_json_mode_multi_convention(
+async def test_validate_attrs_multi_convention(
     client: AsyncClient, spatial_attrs: dict, proj_attrs: dict
 ) -> None:
     attrs = {**spatial_attrs, **proj_attrs}
-    resp = await client.post("/api/validate", json={"attributes": attrs})
+    resp = await client.post("/api/validate/attributes", json={"attributes": attrs})
     assert resp.status_code == 200
     data = resp.json()
     assert "spatial" in data["conventions"]
@@ -59,8 +59,8 @@ async def test_json_mode_multi_convention(
 
 
 @pytest.mark.anyio
-async def test_json_mode_empty_attrs(client: AsyncClient) -> None:
-    resp = await client.post("/api/validate", json={"attributes": {}})
+async def test_validate_attrs_empty(client: AsyncClient) -> None:
+    resp = await client.post("/api/validate/attributes", json={"attributes": {}})
     assert resp.status_code == 200
     data = resp.json()
     assert data["conventions"] == []
@@ -69,10 +69,10 @@ async def test_json_mode_empty_attrs(client: AsyncClient) -> None:
 
 
 @pytest.mark.anyio
-async def test_json_mode_invalid_attrs(client: AsyncClient) -> None:
+async def test_validate_attrs_invalid(client: AsyncClient) -> None:
     # spatial:dimensions present (so convention is detected) but invalid type
     attrs = {"spatial:dimensions": "not-a-list"}
-    resp = await client.post("/api/validate", json={"attributes": attrs})
+    resp = await client.post("/api/validate/attributes", json={"attributes": attrs})
     assert resp.status_code == 200
     data = resp.json()
     assert "spatial" in data["conventions"]
@@ -81,7 +81,13 @@ async def test_json_mode_invalid_attrs(client: AsyncClient) -> None:
 
 
 @pytest.mark.anyio
-async def test_url_mode_local_zarr(client: AsyncClient, tmp_path: Path) -> None:
+async def test_validate_attrs_missing_body(client: AsyncClient) -> None:
+    resp = await client.post("/api/validate/attributes", json={})
+    assert resp.status_code == 422
+
+
+@pytest.mark.anyio
+async def test_validate_group_local_zarr(client: AsyncClient, tmp_path: Path) -> None:
     # Create a local zarr store with spatial attributes
     store_path = tmp_path / "test.zarr"
     root = zarr.open_group(str(store_path), mode="w")
@@ -89,7 +95,7 @@ async def test_url_mode_local_zarr(client: AsyncClient, tmp_path: Path) -> None:
     root.attrs["spatial:transform"] = [10.0, 0.0, 500000.0, 0.0, -10.0, 5000000.0]
 
     resp = await client.post(
-        "/api/validate",
+        "/api/validate/group",
         json={"url": f"file://{store_path}"},
     )
     assert resp.status_code == 200
@@ -102,9 +108,9 @@ async def test_url_mode_local_zarr(client: AsyncClient, tmp_path: Path) -> None:
 
 
 @pytest.mark.anyio
-async def test_url_mode_nonexistent(client: AsyncClient) -> None:
+async def test_validate_group_nonexistent(client: AsyncClient) -> None:
     resp = await client.post(
-        "/api/validate",
+        "/api/validate/group",
         json={"url": "https://does-not-exist.example.com/data.zarr"},
     )
     assert resp.status_code == 200
@@ -114,6 +120,6 @@ async def test_url_mode_nonexistent(client: AsyncClient) -> None:
 
 
 @pytest.mark.anyio
-async def test_missing_url_and_attributes(client: AsyncClient) -> None:
-    resp = await client.post("/api/validate", json={})
+async def test_validate_group_missing_url(client: AsyncClient) -> None:
+    resp = await client.post("/api/validate/group", json={})
     assert resp.status_code == 422
