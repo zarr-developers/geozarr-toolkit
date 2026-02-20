@@ -37,10 +37,9 @@ h1 {
   display: flex;
   gap: 0.5rem;
   flex: 1;
-  max-width: 600px;
 }
 
-#open-form input[type="url"] {
+#url-input {
   flex: 1;
   padding: 0.45rem 0.75rem;
   border: 1px solid #ccc;
@@ -49,7 +48,7 @@ h1 {
   transition: border-color 0.15s;
 }
 
-#open-form input[type="url"]:focus {
+#url-input:focus {
   outline: none;
   border-color: #4a7dff;
   box-shadow: 0 0 0 3px rgba(74, 125, 255, 0.15);

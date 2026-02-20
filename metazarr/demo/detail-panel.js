@@ -105,11 +105,14 @@ function createNodeInfo(node) {
         (c) => c.name === "sharding_indexed",
       );
       if (shardingCodec?.configuration?.chunk_shape) {
-        addInfoRow(
-          dl,
-          "Sharding",
-          `Sub-chunks: [${shardingCodec.configuration.chunk_shape.join(", ")}]`,
-        );
+        const subShape = shardingCodec.configuration.chunk_shape;
+        const subByteSize = dtypeByteSize(node.dtype);
+        let shardLabel = `Sub-chunks: [${subShape.join(", ")}]`;
+        if (subByteSize) {
+          const subElements = subShape.reduce((a, b) => a * b, 1);
+          shardLabel += ` (${formatBytes(subElements * subByteSize)})`;
+        }
+        addInfoRow(dl, "Sharding", shardLabel);
       }
     } else if (meta?.zarr_format === 2) {
       if (meta.compressor) {

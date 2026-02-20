@@ -1,18 +1,19 @@
 /**
  * Zarr store creation and hierarchy discovery.
  *
- * Tries four strategies in order:
+ * Tries five strategies in order:
  * 1. Zarr v3 inline consolidated metadata (root zarr.json)
  * 2. Zarr v2 consolidated metadata (.zmetadata)
  * 3. HTML directory crawling (S3-backed HTTP endpoints)
- * 4. Manual path entry
+ * 4. S3 XML listing (ListObjectsV2 for public buckets)
+ * 5. Manual path entry
  *
  * TODO: v3 consolidated metadata support should be contributed upstream to
  * zarrita.js (in consolidated.ts alongside withConsolidated). The natural
  * place is on the Group object, following zarrs's design where consolidated
  * metadata is a group-level property parsed from zarr.json additional fields.
  *
- * @typedef {"consolidated-v3"|"consolidated-v2"|"crawled"|"manual"} DiscoveryMethod
+ * @typedef {"consolidated-v3"|"consolidated-v2"|"crawled"|"s3-list"|"manual"} DiscoveryMethod
  *
  * @typedef {Object} StoreResult
  * @property {object} store - The zarrita FetchStore or Listable store
@@ -26,17 +27,46 @@
 import { FetchStore, withConsolidated } from "zarrita";
 import { tryV3Consolidated } from "./consolidated-v3.js";
 import { tryCrawlDirectory } from "./crawl.js";
+import { tryS3List } from "./s3-list.js";
+
+/**
+ * AWS region pattern — matches prefixes like "us-west-2", "eu-central-1", etc.
+ */
+const AWS_REGION_RE =
+  /^(us|eu|ap|sa|ca|me|af|il)-(north|south|east|west|central|northeast|southeast|northwest|southwest)-\d+/;
+
+/**
+ * Convert an S3 URL to an HTTPS path-style URL for browser access.
+ * Path-style avoids SSL issues with dotted bucket names.
+ * Detects the region from the bucket name when possible to avoid
+ * CORS-blocked redirects from the global S3 endpoint.
+ *
+ * @param {string} url - Potential S3 URL (s3://bucket/key)
+ * @returns {string} HTTPS URL, or the original URL if not an S3 URL
+ */
+function s3ToHttps(url) {
+  const match = url.match(/^s3:\/\/([^/]+)\/?(.*)$/);
+  if (!match) return url;
+  const [, bucket, key] = match;
+
+  // Try to detect region from bucket name (e.g. "us-west-2.opendata.source.coop")
+  const regionMatch = bucket.match(AWS_REGION_RE);
+  const region = regionMatch ? regionMatch[0] : "us-east-1";
+  const base = `https://s3.${region}.amazonaws.com/${bucket}`;
+
+  return key ? `${base}/${key}` : base;
+}
 
 /**
  * Open a remote Zarr store by URL.
  *
- * @param {string} url - URL to the Zarr store root
+ * @param {string} url - URL to the Zarr store root (https:// or s3://)
  * @param {object} [options]
  * @param {(path: string) => void} [options.onProgress] - Progress callback for crawling
  * @returns {Promise<StoreResult>}
  */
 export async function openStore(url, options = {}) {
-  const normalizedUrl = url.replace(/\/+$/, "");
+  const normalizedUrl = s3ToHttps(url).replace(/\/+$/, "");
   const fetchStore = new FetchStore(normalizedUrl);
 
   // Strategy 1: v3 inline consolidated metadata
@@ -82,7 +112,22 @@ export async function openStore(url, options = {}) {
     };
   }
 
-  // Strategy 4: manual
+  // Strategy 4: S3 XML listing
+  const s3Entries = await tryS3List(normalizedUrl, {
+    onProgress: options.onProgress,
+  });
+  if (s3Entries) {
+    return {
+      store: fetchStore,
+      url: normalizedUrl,
+      discovery: "s3-list",
+      zarrFormat: s3Entries[0]?.zarrFormat ?? null,
+      v3Entries: null,
+      crawledEntries: s3Entries,
+    };
+  }
+
+  // Strategy 5: manual
   return {
     store: fetchStore,
     url: normalizedUrl,

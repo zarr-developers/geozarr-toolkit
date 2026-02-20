@@ -73,13 +73,14 @@ async function openStoreFromUrl(url, autoSelectNode) {
       const tree = await buildTree(result.store);
       currentTree = tree;
       renderTree(tree, onNodeSelect, treeContainer);
-    } else if (result.discovery === "crawled") {
+    } else if (result.discovery === "crawled" || result.discovery === "s3-list") {
+      const label = result.discovery === "s3-list" ? "S3 listing" : "Directory crawl";
       statusEl.innerHTML =
-        `${formatBadge}<span class="badge badge-info">Directory crawl</span> ${result.crawledEntries.length} nodes`;
+        `${formatBadge}<span class="badge badge-info">${label}</span> ${result.crawledEntries.length} nodes`;
       const tree = await buildTreeFromCrawl(result.store, result.crawledEntries);
       currentTree = tree;
       renderTree(tree, onNodeSelect, treeContainer);
-      // Still show add-path in case crawling missed something
+      // Still show add-path in case listing missed something
       addPathContainer.hidden = false;
     } else {
       statusEl.innerHTML =
