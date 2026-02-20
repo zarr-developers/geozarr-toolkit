@@ -129,7 +129,7 @@ Paste a Zarr store URL (https://, s3://, gs://, az://) and optionally a group pa
 
 ## metazarr
 
-[`metazarr/`](metazarr/) is a client-side JavaScript library and web app for exploring Zarr store hierarchies and validating GeoZarr convention compliance. It runs entirely in the browser with no server required.
+[`metazarr/`](metazarr/) is a client-side JavaScript library and web app for exploring Zarr store hierarchies and validating GeoZarr convention compliance. It runs entirely in the browser with no server required. Deployed at [inspect.geozarr.org](https://inspect.geozarr.org/).
 
 Features:
 
