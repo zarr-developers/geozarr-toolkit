@@ -18,11 +18,12 @@ import { root, open } from "zarrita";
  * Build a full hierarchy tree from a consolidated (Listable) store.
  *
  * @param {object} listableStore - A Listable store with .contents() method
+ * @param {2|3|null} [zarrFormat] - Known zarr format to skip version probing
  * @returns {Promise<TreeNode>}
  */
-export async function buildTree(listableStore) {
+export async function buildTree(listableStore, zarrFormat = null) {
   const contents = listableStore.contents();
-  return buildTreeFromContents(listableStore, contents);
+  return buildTreeFromContents(listableStore, contents, zarrFormat);
 }
 
 /**
@@ -92,21 +93,24 @@ export function buildTreeFromV3(v3Entries) {
 }
 
 export async function buildTreeFromCrawl(store, entries) {
-  // Crawl entries have path + kind hint. "unknown" kind means zarr.json exists
-  // but we don't know if it's a group or array yet — open will figure it out.
+  // Detect zarr format from the first entry — all nodes in a store share
+  // the same format, so we can skip probing the wrong version for every node.
+  const zarrFormat = entries[0]?.zarrFormat ?? null;
+
   const contents = entries.map((e) => ({
     path: e.path,
     kind: e.kind === "unknown" ? undefined : e.kind,
   }));
-  return buildTreeFromContents(store, contents);
+  return buildTreeFromContents(store, contents, zarrFormat);
 }
 
 /**
  * @param {object} store
  * @param {{ path: string, kind?: string }[]} contents
+ * @param {2|3|null} [zarrFormat] - Known zarr format to skip version probing
  * @returns {Promise<TreeNode>}
  */
-async function buildTreeFromContents(store, contents) {
+async function buildTreeFromContents(store, contents, zarrFormat = null) {
 
   // Create a flat map of path → TreeNode
   /** @type {Map<string, TreeNode>} */
@@ -114,7 +118,7 @@ async function buildTreeFromContents(store, contents) {
 
   // Open each node to get attributes and array metadata
   for (const entry of contents) {
-    const node = await openNodeFromStore(store, entry.path, entry.kind);
+    const node = await openNodeFromStore(store, entry.path, entry.kind, zarrFormat);
     nodes.set(entry.path, node);
   }
 
@@ -201,24 +205,30 @@ export function findNode(root, path) {
  *
  * @param {object} store - A zarrita store with a get() method
  * @param {string} path - Node path (e.g. "/", "/group1/array1")
+ * @param {2|3|null} [zarrFormat] - Known format to avoid probing both
  * @returns {Promise<object|null>} Parsed metadata object, or null
  */
-async function readRawMeta(store, path) {
+async function readRawMeta(store, path, zarrFormat = null) {
   const prefix = path === "/" ? "" : path;
-  // Try v3 first
-  try {
-    const v3Bytes = await store.get(`${prefix}/zarr.json`);
-    if (v3Bytes) {
-      return JSON.parse(new TextDecoder().decode(v3Bytes));
-    }
-  } catch { /* ignore */ }
-  // Fall back to v2
-  try {
-    const v2Bytes = await store.get(`${prefix}/.zarray`);
-    if (v2Bytes) {
-      return JSON.parse(new TextDecoder().decode(v2Bytes));
-    }
-  } catch { /* ignore */ }
+
+  if (zarrFormat !== 2) {
+    try {
+      const v3Bytes = await store.get(`${prefix}/zarr.json`);
+      if (v3Bytes) {
+        return JSON.parse(new TextDecoder().decode(v3Bytes));
+      }
+    } catch { /* ignore */ }
+  }
+
+  if (zarrFormat !== 3) {
+    try {
+      const v2Bytes = await store.get(`${prefix}/.zarray`);
+      if (v2Bytes) {
+        return JSON.parse(new TextDecoder().decode(v2Bytes));
+      }
+    } catch { /* ignore */ }
+  }
+
   return null;
 }
 
@@ -226,15 +236,23 @@ async function readRawMeta(store, path) {
  * @param {object} store
  * @param {string} path
  * @param {"group"|"array"} [hintKind]
+ * @param {2|3|null} [zarrFormat] - Known zarr format to avoid version probing
  * @returns {Promise<TreeNode>}
  */
-async function openNodeFromStore(store, path, hintKind) {
+async function openNodeFromStore(store, path, hintKind, zarrFormat = null) {
   const location = root(store).resolve(path);
+  const opts = hintKind ? { kind: hintKind } : {};
 
   try {
-    const node = hintKind
-      ? await open(location, { kind: hintKind })
-      : await open(location);
+    // Use format-specific open to avoid probing the wrong version
+    let node;
+    if (zarrFormat === 2) {
+      node = await open.v2(location, opts);
+    } else if (zarrFormat === 3) {
+      node = await open.v3(location, opts);
+    } else {
+      node = await open(location, opts);
+    }
 
     /** @type {TreeNode} */
     const treeNode = {
@@ -248,7 +266,7 @@ async function openNodeFromStore(store, path, hintKind) {
       treeNode.shape = node.shape;
       treeNode.dtype = node.dtype;
       treeNode.chunks = node.chunks;
-      treeNode.meta = await readRawMeta(store, path);
+      treeNode.meta = await readRawMeta(store, path, zarrFormat);
     }
 
     return treeNode;

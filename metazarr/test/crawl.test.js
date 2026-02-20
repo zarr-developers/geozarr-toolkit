@@ -37,8 +37,7 @@ const GROUP2_HTML = `<!DOCTYPE html><html><body>
 <h1>Index of /group2/</h1>
 <table>
 <tr><td><a href="../">..</a></td></tr>
-<tr><td><a href="/group2/.zgroup">.zgroup</a></td></tr>
-<tr><td><a href="/group2/.zattrs">.zattrs</a></td></tr>
+<tr><td><a href="/group2/zarr.json">zarr.json</a></td></tr>
 </table></body></html>`;
 
 function mockFetch(urlMap) {
@@ -80,9 +79,9 @@ describe("crawlDirectory", () => {
     const root = entries.find((e) => e.path === "/");
     expect(root.kind).toBe("unknown");
 
-    // group2 has .zgroup → kind "group"
+    // group2 has zarr.json → kind "unknown" (v3 doesn't distinguish at crawl level)
     const group2 = entries.find((e) => e.path === "/group2");
-    expect(group2.kind).toBe("group");
+    expect(group2.kind).toBe("unknown");
 
     // Chunk directories (c/) should NOT appear as nodes since they have no zarr metadata
     expect(paths).not.toContain("/group1/array_a/c");

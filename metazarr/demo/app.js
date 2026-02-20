@@ -70,7 +70,7 @@ async function openStoreFromUrl(url, autoSelectNode) {
       renderTree(tree, onNodeSelect, treeContainer);
     } else if (result.discovery === "consolidated-v2") {
       statusEl.innerHTML = `${formatBadge}<span class="badge badge-info">Consolidated</span>`;
-      const tree = await buildTree(result.store);
+      const tree = await buildTree(result.store, result.zarrFormat);
       currentTree = tree;
       renderTree(tree, onNodeSelect, treeContainer);
     } else if (result.discovery === "crawled" || result.discovery === "s3-list") {

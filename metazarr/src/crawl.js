@@ -33,8 +33,10 @@ export async function crawlDirectory(baseUrl, options = {}) {
   /** @type {CrawlEntry[]} */
   const entries = [];
   const visited = new Set();
+  /** @type {{ value: 2|3|null }} Detected format from the first node found */
+  const detectedFormat = { value: null };
 
-  await crawlRecursive(normalizedBase, path, entries, visited, 0, maxDepth, maxNodes, onProgress);
+  await crawlRecursive(normalizedBase, path, entries, visited, 0, maxDepth, maxNodes, detectedFormat, onProgress);
   return entries;
 }
 
@@ -63,9 +65,10 @@ export async function tryCrawlDirectory(baseUrl, options = {}) {
  * @param {number} depth
  * @param {number} maxDepth
  * @param {number} maxNodes
+ * @param {{ value: 2|3|null }} detectedFormat - Shared format detection across recursion
  * @param {Function|undefined} onProgress
  */
-async function crawlRecursive(baseUrl, path, entries, visited, depth, maxDepth, maxNodes, onProgress) {
+async function crawlRecursive(baseUrl, path, entries, visited, depth, maxDepth, maxNodes, detectedFormat, onProgress) {
   if (depth > maxDepth) return;
   if (entries.length >= maxNodes) return;
 
@@ -86,10 +89,12 @@ async function crawlRecursive(baseUrl, path, entries, visited, depth, maxDepth, 
 
   const links = parseDirectoryLinks(html, normalizedPath);
 
-  // Check what's in this directory
-  const hasZarrJson = links.files.some((f) => f === "zarr.json");
-  const hasZarray = links.files.some((f) => f === ".zarray");
-  const hasZgroup = links.files.some((f) => f === ".zgroup");
+  // Check for zarr metadata files — once we know the format, only check
+  // for the relevant files to avoid false positives
+  const fmt = detectedFormat.value;
+  const hasZarrJson = fmt !== 2 && links.files.some((f) => f === "zarr.json");
+  const hasZarray = fmt !== 3 && links.files.some((f) => f === ".zarray");
+  const hasZgroup = fmt !== 3 && links.files.some((f) => f === ".zgroup");
 
   if (hasZarrJson || hasZarray || hasZgroup) {
     const nodeKind = hasZarray
@@ -100,6 +105,12 @@ async function crawlRecursive(baseUrl, path, entries, visited, depth, maxDepth, 
 
     const nodePath = normalizedPath.replace(/\/+$/, "") || "/";
     const zarrFormat = hasZarrJson ? 3 : 2;
+
+    // Lock in the format after the first node
+    if (detectedFormat.value === null) {
+      detectedFormat.value = zarrFormat;
+    }
+
     entries.push({ path: nodePath, kind: nodeKind, zarrFormat });
     onProgress?.(nodePath);
 
@@ -110,7 +121,7 @@ async function crawlRecursive(baseUrl, path, entries, visited, depth, maxDepth, 
   for (const dir of links.directories) {
     if (entries.length >= maxNodes) return;
     const childPath = normalizedPath + dir;
-    await crawlRecursive(baseUrl, childPath, entries, visited, depth + 1, maxDepth, maxNodes, onProgress);
+    await crawlRecursive(baseUrl, childPath, entries, visited, depth + 1, maxDepth, maxNodes, detectedFormat, onProgress);
   }
 }
 

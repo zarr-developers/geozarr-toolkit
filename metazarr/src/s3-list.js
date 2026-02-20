@@ -50,6 +50,8 @@ export async function tryS3List(url, options = {}) {
   try {
     /** @type {CrawlEntry[]} */
     const entries = [];
+    /** @type {{ value: 2|3|null }} */
+    const detectedFormat = { value: null };
     await listRecursive(
       parsed.bucketUrl,
       parsed.prefix,
@@ -58,6 +60,7 @@ export async function tryS3List(url, options = {}) {
       0,
       10,
       maxNodes,
+      detectedFormat,
       options.onProgress,
     );
     return entries.length > 0 ? entries : null;
@@ -85,6 +88,7 @@ async function listRecursive(
   depth,
   maxDepth,
   maxNodes,
+  detectedFormat,
   onProgress,
 ) {
   if (depth > maxDepth) return;
@@ -92,13 +96,19 @@ async function listRecursive(
 
   const { files, directories } = await listS3Prefix(bucketUrl, prefix);
 
-  const hasZarrJson = files.includes("zarr.json");
-  const hasZarray = files.includes(".zarray");
-  const hasZgroup = files.includes(".zgroup");
+  // Once the format is known, only check for the relevant metadata files
+  const fmt = detectedFormat.value;
+  const hasZarrJson = fmt !== 2 && files.includes("zarr.json");
+  const hasZarray = fmt !== 3 && files.includes(".zarray");
+  const hasZgroup = fmt !== 3 && files.includes(".zgroup");
 
   if (hasZarrJson || hasZarray || hasZgroup) {
     const kind = hasZarray ? "array" : hasZgroup ? "group" : "unknown";
     const zarrFormat = hasZarrJson ? 3 : 2;
+
+    if (detectedFormat.value === null) {
+      detectedFormat.value = zarrFormat;
+    }
 
     const nodePath =
       prefix === rootPrefix
@@ -127,6 +137,7 @@ async function listRecursive(
       depth + 1,
       maxDepth,
       maxNodes,
+      detectedFormat,
       onProgress,
     );
   }
