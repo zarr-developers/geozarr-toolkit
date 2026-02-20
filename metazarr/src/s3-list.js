@@ -37,12 +37,15 @@ function parseS3Url(url) {
  *
  * @param {string} url - Store root URL (path-style S3 HTTPS URL)
  * @param {object} [options]
+ * @param {number} [options.maxNodes=50] - Maximum number of nodes to discover
  * @param {(path: string) => void} [options.onProgress]
  * @returns {Promise<CrawlEntry[]|null>}
  */
 export async function tryS3List(url, options = {}) {
   const parsed = parseS3Url(url);
   if (!parsed) return null;
+
+  const maxNodes = options.maxNodes ?? 50;
 
   try {
     /** @type {CrawlEntry[]} */
@@ -54,6 +57,7 @@ export async function tryS3List(url, options = {}) {
       entries,
       0,
       10,
+      maxNodes,
       options.onProgress,
     );
     return entries.length > 0 ? entries : null;
@@ -80,9 +84,11 @@ async function listRecursive(
   entries,
   depth,
   maxDepth,
+  maxNodes,
   onProgress,
 ) {
   if (depth > maxDepth) return;
+  if (entries.length >= maxNodes) return;
 
   const { files, directories } = await listS3Prefix(bucketUrl, prefix);
 
@@ -94,7 +100,6 @@ async function listRecursive(
     const kind = hasZarray ? "array" : hasZgroup ? "group" : "unknown";
     const zarrFormat = hasZarrJson ? 3 : 2;
 
-    // Compute store-relative path
     const nodePath =
       prefix === rootPrefix
         ? "/"
@@ -102,27 +107,29 @@ async function listRecursive(
 
     entries.push({ path: nodePath, kind, zarrFormat });
     onProgress?.(nodePath);
+
+    if (entries.length >= maxNodes) return;
   }
 
   // Recurse into subdirectories, skipping known chunk storage dirs
-  const promises = directories
-    .filter((dir) => {
-      const name = dir.split("/").pop();
-      return !CHUNK_DIR_NAMES.has(name);
-    })
-    .map((dir) =>
-      listRecursive(
-        bucketUrl,
-        rootPrefix,
-        dir,
-        entries,
-        depth + 1,
-        maxDepth,
-        onProgress,
-      ),
-    );
+  const filteredDirs = directories.filter((dir) => {
+    const name = dir.split("/").pop();
+    return !CHUNK_DIR_NAMES.has(name);
+  });
 
-  await Promise.all(promises);
+  for (const dir of filteredDirs) {
+    if (entries.length >= maxNodes) return;
+    await listRecursive(
+      bucketUrl,
+      rootPrefix,
+      dir,
+      entries,
+      depth + 1,
+      maxDepth,
+      maxNodes,
+      onProgress,
+    );
+  }
 }
 
 /**

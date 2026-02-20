@@ -22,6 +22,7 @@
  * @property {2|3|null} zarrFormat - Detected Zarr format version (null if unknown)
  * @property {import("./consolidated-v3.js").V3NodeEntry[]|null} v3Entries - v3 consolidated entries
  * @property {import("./crawl.js").CrawlEntry[]|null} crawledEntries - Crawled entries
+ * @property {boolean} truncated - True if node discovery was capped by maxNodes
  */
 
 import { FetchStore, withConsolidated } from "zarrita";
@@ -62,10 +63,12 @@ function s3ToHttps(url) {
  *
  * @param {string} url - URL to the Zarr store root (https:// or s3://)
  * @param {object} [options]
+ * @param {number} [options.maxNodes=50] - Maximum nodes to discover (crawl/S3 paths only)
  * @param {(path: string) => void} [options.onProgress] - Progress callback for crawling
  * @returns {Promise<StoreResult>}
  */
 export async function openStore(url, options = {}) {
+  const maxNodes = options.maxNodes ?? 50;
   const normalizedUrl = s3ToHttps(url).replace(/\/+$/, "");
   const fetchStore = new FetchStore(normalizedUrl);
 
@@ -79,6 +82,7 @@ export async function openStore(url, options = {}) {
       zarrFormat: 3,
       v3Entries: v3Result.entries,
       crawledEntries: null,
+      truncated: false,
     };
   }
 
@@ -92,6 +96,7 @@ export async function openStore(url, options = {}) {
       zarrFormat: 2,
       v3Entries: null,
       crawledEntries: null,
+      truncated: false,
     };
   } catch {
     // No v2 consolidated metadata
@@ -99,6 +104,7 @@ export async function openStore(url, options = {}) {
 
   // Strategy 3: HTML directory crawling
   const entries = await tryCrawlDirectory(normalizedUrl, {
+    maxNodes,
     onProgress: options.onProgress,
   });
   if (entries) {
@@ -109,11 +115,13 @@ export async function openStore(url, options = {}) {
       zarrFormat: entries[0]?.zarrFormat ?? null,
       v3Entries: null,
       crawledEntries: entries,
+      truncated: entries.length >= maxNodes,
     };
   }
 
   // Strategy 4: S3 XML listing
   const s3Entries = await tryS3List(normalizedUrl, {
+    maxNodes,
     onProgress: options.onProgress,
   });
   if (s3Entries) {
@@ -124,6 +132,7 @@ export async function openStore(url, options = {}) {
       zarrFormat: s3Entries[0]?.zarrFormat ?? null,
       v3Entries: null,
       crawledEntries: s3Entries,
+      truncated: s3Entries.length >= maxNodes,
     };
   }
 
@@ -155,6 +164,7 @@ export async function openStore(url, options = {}) {
     zarrFormat: null,
     v3Entries: null,
     crawledEntries: null,
+    truncated: false,
   };
 }
 

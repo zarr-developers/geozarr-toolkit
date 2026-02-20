@@ -22,18 +22,19 @@
  * @param {object} [options]
  * @param {string} [options.path="/"] - Starting path to crawl from
  * @param {number} [options.maxDepth=10] - Maximum recursion depth
+ * @param {number} [options.maxNodes=50] - Maximum number of nodes to discover
  * @param {(path: string) => void} [options.onProgress] - Called for each discovered path
  * @returns {Promise<CrawlEntry[]>} All discovered nodes
  */
 export async function crawlDirectory(baseUrl, options = {}) {
-  const { path = "/", maxDepth = 10, onProgress } = options;
+  const { path = "/", maxDepth = 10, maxNodes = 50, onProgress } = options;
   const normalizedBase = baseUrl.replace(/\/+$/, "");
 
   /** @type {CrawlEntry[]} */
   const entries = [];
   const visited = new Set();
 
-  await crawlRecursive(normalizedBase, path, entries, visited, 0, maxDepth, onProgress);
+  await crawlRecursive(normalizedBase, path, entries, visited, 0, maxDepth, maxNodes, onProgress);
   return entries;
 }
 
@@ -61,10 +62,12 @@ export async function tryCrawlDirectory(baseUrl, options = {}) {
  * @param {Set<string>} visited
  * @param {number} depth
  * @param {number} maxDepth
+ * @param {number} maxNodes
  * @param {Function|undefined} onProgress
  */
-async function crawlRecursive(baseUrl, path, entries, visited, depth, maxDepth, onProgress) {
+async function crawlRecursive(baseUrl, path, entries, visited, depth, maxDepth, maxNodes, onProgress) {
   if (depth > maxDepth) return;
+  if (entries.length >= maxNodes) return;
 
   const normalizedPath = path.endsWith("/") ? path : path + "/";
   if (visited.has(normalizedPath)) return;
@@ -89,26 +92,26 @@ async function crawlRecursive(baseUrl, path, entries, visited, depth, maxDepth, 
   const hasZgroup = links.files.some((f) => f === ".zgroup");
 
   if (hasZarrJson || hasZarray || hasZgroup) {
-    // This is a zarr node — determine its kind
     const nodeKind = hasZarray
       ? "array"
       : hasZgroup
         ? "group"
-        : "unknown"; // zarr.json could be either; we'll resolve later
+        : "unknown";
 
     const nodePath = normalizedPath.replace(/\/+$/, "") || "/";
     const zarrFormat = hasZarrJson ? 3 : 2;
     entries.push({ path: nodePath, kind: nodeKind, zarrFormat });
     onProgress?.(nodePath);
+
+    if (entries.length >= maxNodes) return;
   }
 
   // Recurse into subdirectories
-  const subdirPromises = links.directories.map((dir) => {
+  for (const dir of links.directories) {
+    if (entries.length >= maxNodes) return;
     const childPath = normalizedPath + dir;
-    return crawlRecursive(baseUrl, childPath, entries, visited, depth + 1, maxDepth, onProgress);
-  });
-
-  await Promise.all(subdirPromises);
+    await crawlRecursive(baseUrl, childPath, entries, visited, depth + 1, maxDepth, maxNodes, onProgress);
+  }
 }
 
 /**
