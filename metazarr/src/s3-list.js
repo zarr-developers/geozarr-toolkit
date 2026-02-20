@@ -13,22 +13,37 @@
 const S3_PATH_RE =
   /^(https:\/\/s3\.[^/]+\.amazonaws\.com\/[^/]+)\/?(.*)$/;
 
+/** Matches S3 virtual-hosted-style HTTPS URLs: https://<bucket>.s3[.<region>].amazonaws.com/... */
+const S3_VHOST_RE =
+  /^(https:\/\/[^/]+\.s3(?:\.[^./]+)?\.amazonaws\.com)\/?(.*)$/;
+
 /** Directory names that are chunk storage, not zarr nodes */
 const CHUNK_DIR_NAMES = new Set(["c"]);
 
 /**
- * Parse an S3 path-style HTTPS URL into bucket endpoint and key prefix.
+ * Parse an S3 HTTPS URL (path-style or virtual-hosted) into bucket endpoint and key prefix.
  *
- * @param {string} url - e.g. "https://s3.us-west-2.amazonaws.com/bucket/prefix/path"
+ * @param {string} url
  * @returns {{ bucketUrl: string, prefix: string } | null}
  */
 function parseS3Url(url) {
-  const match = url.match(S3_PATH_RE);
-  if (!match) return null;
-  return {
-    bucketUrl: match[1],
-    prefix: match[2].replace(/\/+$/, ""),
-  };
+  // Try path-style first: https://s3.<region>.amazonaws.com/<bucket>/...
+  const pathMatch = url.match(S3_PATH_RE);
+  if (pathMatch) {
+    return {
+      bucketUrl: pathMatch[1],
+      prefix: pathMatch[2].replace(/\/+$/, ""),
+    };
+  }
+  // Try virtual-hosted-style: https://<bucket>.s3[.<region>].amazonaws.com/...
+  const vhostMatch = url.match(S3_VHOST_RE);
+  if (vhostMatch) {
+    return {
+      bucketUrl: vhostMatch[1],
+      prefix: vhostMatch[2].replace(/\/+$/, ""),
+    };
+  }
+  return null;
 }
 
 /**
