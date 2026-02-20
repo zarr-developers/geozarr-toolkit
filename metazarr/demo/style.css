@@ -107,6 +107,18 @@ button:disabled { background: #a0b4e0; cursor: not-allowed; }
   white-space: nowrap;
 }
 
+.github-link {
+  color: #666;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  transition: color 0.15s;
+}
+
+.github-link:hover {
+  color: #1a1a2e;
+}
+
 /* --- Main layout --- */
 
 main {
