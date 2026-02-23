@@ -49,6 +49,12 @@ geozarr = "geozarr_toolkit.cli:main"
 version.source = "vcs"
 build.hooks.vcs.version-file = "src/geozarr_toolkit/_version.py"
 
+[tool.hatch.build.targets.sdist]
+exclude = ["metazarr/"]
+
+[tool.hatch.build.targets.wheel]
+exclude = ["metazarr/"]
+
 [dependency-groups]
 dev = [
     "pytest>=7.0.0",
