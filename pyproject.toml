@@ -11,18 +11,9 @@ authors = [
 requires-python = ">=3.12"
 dependencies = [
     "zarr>=3.0.8",
-    "xarray",
-    "rioxarray",
-    "cf-xarray",
-    "cftime",
-    "dask",
     "pydantic>=2.12",
-    "pydantic-zarr>=0.8.0",
     "pyproj>=3.7.0",
     "structlog>=25.5.0",
-    "typing-extensions>=4.15.0",
-    "async-geotiff",
-    "obstore",
 ]
 dynamic = ["version"]
 readme = "README.md"
@@ -140,7 +131,7 @@ warn_unused_ignores = true
 strict_equality = true
 
 [[tool.mypy.overrides]]
-module = ["zarr.*", "xarray.*", "rioxarray.*", "cf_xarray.*", "dask.*", "pyproj.*"]
+module = ["zarr.*", "pyproj.*"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]
