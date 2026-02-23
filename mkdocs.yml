@@ -19,7 +19,6 @@ nav:
     - "Creation": "api/creation.md"
     - "Conversion": "api/conversion.md"
   - "CLI Reference": "cli.md"
-  - "Web API": "web-api.md"
 
 watch:
   - src/geozarr_toolkit
