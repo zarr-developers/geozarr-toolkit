@@ -48,6 +48,9 @@ jobs:
   upload_pypi:
     needs: [build_artifacts]
     runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write
     if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/v')
     steps:
       - uses: actions/download-artifact@v4
@@ -55,7 +58,3 @@ jobs:
           name: releases
           path: dist
       - uses: pypa/gh-action-pypi-publish@v1.12.4
-        with:
-          user: __token__
-          password: ${{ secrets.pypi_password }}
-          # To test: repository_url: https://test.pypi.org/legacy/
