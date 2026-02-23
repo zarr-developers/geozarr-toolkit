@@ -30,7 +30,7 @@ See the [Getting Started guide](getting-started.md) for more details, or browse 
 ## Installation
 
 ```bash
-pip install "geozarr-toolkit @ git+https://github.com/zarr-developers/geozarr-toolkit.git"
+pip install "geozarr-toolkit"
 ```
 
 ## Goals

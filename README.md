@@ -9,7 +9,7 @@ Python library for creating and validating [GeoZarr](https://github.com/zarr-dev
 ## Installation
 
 ```bash
-pip install "geozarr-toolkit @ git+https://github.com/zarr-developers/geozarr-toolkit.git"
+pip install "geozarr-toolkit"
 ```
 
 ## Quick start

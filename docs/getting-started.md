@@ -5,9 +5,9 @@ This guide shows you how to use the `geozarr-toolkit` library to create and vali
 ## Installation
 
 ```bash
-pip install "geozarr-toolkit @ git+https://github.com/zarr-developers/geozarr-toolkit.git"
+pip install "geozarr-toolkit"
 # or with uv
-uv pip install "geozarr-toolkit @ git+https://github.com/zarr-developers/geozarr-toolkit.git"
+uv pip install "geozarr-toolkit"
 ```
 
 ## Quick Start
