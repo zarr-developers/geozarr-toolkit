@@ -350,9 +350,36 @@ function createConventionsSection(node, conventions) {
   const section = document.createElement("div");
   section.className = "conventions-section";
 
+  const header = document.createElement("div");
+  header.className = "conventions-header";
+
   const h3 = document.createElement("h3");
   h3.textContent = `Conventions (${conventions.length})`;
-  section.appendChild(h3);
+  header.appendChild(h3);
+
+  // Validate All button for this node (only if there are validatable conventions)
+  const validatable = conventions.filter((c) => c.schemaUrl);
+  if (validatable.length > 1) {
+    const validateAllBtn = document.createElement("button");
+    validateAllBtn.className = "validate-btn";
+    validateAllBtn.textContent = "Validate All";
+    validateAllBtn.addEventListener("click", async () => {
+      validateAllBtn.disabled = true;
+      const cards = section.querySelectorAll(".convention-card");
+      for (const card of cards) {
+        const btn = card.querySelector(".validate-btn");
+        if (btn && btn !== validateAllBtn) {
+          btn.click();
+        }
+      }
+      // Re-enable after a tick so all async validations have started
+      await new Promise((r) => setTimeout(r, 0));
+      validateAllBtn.disabled = false;
+    });
+    header.appendChild(validateAllBtn);
+  }
+
+  section.appendChild(header);
 
   if (conventions.length === 0) {
     const msg = document.createElement("div");

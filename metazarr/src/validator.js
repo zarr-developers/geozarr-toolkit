@@ -162,7 +162,12 @@ function separateContainsErrors(rawErrors, nodeMetadata) {
         bestMatchIndex: parseInt(bestIndex, 10),
         bestMatchItem: bestItem,
         itemErrors: bestErrors.map((err) => {
-          const formatted = formatError(err);
+          // AJV standalone compiled validators may not populate err.data for
+          // contains sub-errors. Resolve the actual value from the document.
+          const enriched = err.data === undefined
+            ? { ...err, data: resolveJsonPointer(nodeMetadata, err.instancePath) }
+            : err;
+          const formatted = formatError(enriched);
           // Strip the array/index prefix so paths are relative to the item
           if (formatted.path.startsWith(itemPrefix)) {
             formatted.path = formatted.path.slice(itemPrefix.length) || "/";
