@@ -67,30 +67,90 @@ function createNodeInfo(node) {
       addInfoRow(dl, "Fill Value", formatFillValue(meta.fill_value));
     }
 
-    if (node.chunks) addInfoRow(dl, "Chunks", formatChunks(node.chunks));
-
-    // Computed: chunk count, chunk size, uncompressed size
-    if (node.shape) {
+    // Chunk and shard info
+    {
+      const shardingCodec =
+        meta?.zarr_format === 3 &&
+        meta?.codecs?.find((c) => c.name === "sharding_indexed");
+      const innerChunkShape = shardingCodec?.configuration?.chunk_shape;
+      // Use chunk_grid from raw metadata for the shard (outer) shape, since
+      // node.chunks may come from zarrita which resolves to inner chunk shape.
+      const shardShape = shardingCodec
+        ? meta?.chunk_grid?.configuration?.chunk_shape
+        : null;
       const chunkShape = getChunkShape(node);
       const byteSize = dtypeByteSize(node.dtype);
 
-      if (chunkShape) {
-        const numChunks = node.shape.map((s, i) => Math.ceil(s / chunkShape[i]));
-        const totalChunks = numChunks.reduce((a, b) => a * b, 1);
+      if (shardingCodec && innerChunkShape && shardShape && node.shape) {
+        // --- Sharded array: chunks then shards ---
+        addInfoRow(dl, "Chunk Shape", `[${innerChunkShape.join(", ")}]`);
+
+        const chunkCount = node.shape.map((s, i) =>
+          Math.ceil(s / innerChunkShape[i]),
+        );
+        const totalChunks = chunkCount.reduce((a, b) => a * b, 1);
         addInfoRow(
           dl,
           "Chunk Count",
-          `${totalChunks.toLocaleString()}` +
-            (numChunks.length > 1 ? ` [${numChunks.join(" \u00d7 ")}]` : ""),
+          `${totalChunks.toLocaleString()} [${chunkCount.join(" \u00d7 ")}]`,
         );
 
         if (byteSize) {
-          const chunkElements = chunkShape.reduce((a, b) => a * b, 1);
+          const chunkElements = innerChunkShape.reduce((a, b) => a * b, 1);
           addInfoRow(dl, "Chunk Size", formatBytes(chunkElements * byteSize));
+        }
+
+        const chunksPerShard = shardShape.map((s, i) =>
+          Math.ceil(s / innerChunkShape[i]),
+        );
+        addInfoRow(
+          dl,
+          "Chunks per Shard",
+          `[${chunksPerShard.join(", ")}]`,
+        );
+
+        addInfoRow(dl, "Shard Shape", `[${shardShape.join(", ")}]`);
+
+        const shardCount = node.shape.map((s, i) =>
+          Math.ceil(s / shardShape[i]),
+        );
+        const totalShards = shardCount.reduce((a, b) => a * b, 1);
+        addInfoRow(
+          dl,
+          "Shard Count",
+          `${totalShards.toLocaleString()} [${shardCount.join(" \u00d7 ")}]`,
+        );
+
+        if (byteSize) {
+          const shardElements = shardShape.reduce((a, b) => a * b, 1);
+          addInfoRow(dl, "Shard Size", formatBytes(shardElements * byteSize));
+        }
+      } else {
+        // --- Non-sharded array ---
+        if (node.chunks) addInfoRow(dl, "Chunks", formatChunks(node.chunks));
+
+        if (node.shape && chunkShape) {
+          const numChunks = node.shape.map((s, i) =>
+            Math.ceil(s / chunkShape[i]),
+          );
+          const totalChunks = numChunks.reduce((a, b) => a * b, 1);
+          addInfoRow(
+            dl,
+            "Chunk Count",
+            `${totalChunks.toLocaleString()}` +
+              (numChunks.length > 1
+                ? ` [${numChunks.join(" \u00d7 ")}]`
+                : ""),
+          );
+
+          if (byteSize) {
+            const chunkElements = chunkShape.reduce((a, b) => a * b, 1);
+            addInfoRow(dl, "Chunk Size", formatBytes(chunkElements * byteSize));
+          }
         }
       }
 
-      if (byteSize) {
+      if (node.shape && byteSize) {
         const totalElements = node.shape.reduce((a, b) => a * b, 1);
         addInfoRow(dl, "Uncompressed", formatBytes(totalElements * byteSize));
       }
@@ -99,21 +159,6 @@ function createNodeInfo(node) {
     // Codecs (v3) or Compressor + Filters (v2)
     if (meta?.zarr_format === 3 && meta?.codecs) {
       addInfoRow(dl, "Codecs", formatCodecs(meta.codecs));
-
-      // Sharding detection
-      const shardingCodec = meta.codecs.find(
-        (c) => c.name === "sharding_indexed",
-      );
-      if (shardingCodec?.configuration?.chunk_shape) {
-        const subShape = shardingCodec.configuration.chunk_shape;
-        const subByteSize = dtypeByteSize(node.dtype);
-        let shardLabel = `Sub-chunks: [${subShape.join(", ")}]`;
-        if (subByteSize) {
-          const subElements = subShape.reduce((a, b) => a * b, 1);
-          shardLabel += ` (${formatBytes(subElements * subByteSize)})`;
-        }
-        addInfoRow(dl, "Sharding", shardLabel);
-      }
     } else if (meta?.zarr_format === 2) {
       if (meta.compressor) {
         addInfoRow(dl, "Compressor", formatV2Codec(meta.compressor));
