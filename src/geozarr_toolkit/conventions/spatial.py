@@ -32,7 +32,7 @@ class SpatialConventionMetadata(ZarrConventionMetadata):
     name: Literal["spatial:"] = "spatial:"
     schema_url: str = SPATIAL_SCHEMA_URL
     spec_url: str = SPATIAL_SPEC_URL
-    description: str = "Spatial coordinate and transformation information"
+    description: str = "Spatial coordinate information"
 
 
 class Spatial(BaseModel):
