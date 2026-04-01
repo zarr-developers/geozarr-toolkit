@@ -5,8 +5,10 @@
 import { openStore, CorsError } from "../src/store.js";
 import { buildTree, buildTreeFromV3, buildTreeFromCrawl, openNode, insertNode } from "../src/hierarchy.js";
 import { detectConventions } from "../src/conventions.js";
+import { validateStore } from "../src/report.js";
 import { renderTree, highlightNode } from "./tree.js";
 import { renderDetail } from "./detail-panel.js";
+import { renderReport, renderProgressUI } from "./report-panel.js";
 
 // DOM elements
 const form = document.getElementById("open-form");
@@ -22,6 +24,8 @@ const addPathBtn = document.getElementById("add-path-btn");
 // App state
 let currentStore = null;
 let currentTree = null;
+let currentReport = null;
+let currentAbortController = null;
 
 // --- URL state ---
 
@@ -95,6 +99,7 @@ async function openStoreFromUrl(url, autoSelectNode) {
     }
 
     updateUrlParams(url, null);
+    injectValidateAllButton();
 
     // Auto-select node from URL if provided
     if (autoSelectNode && currentTree) {
@@ -174,10 +179,76 @@ backBtn.addEventListener("click", showTreeView);
 
 function onNodeSelect(node) {
   highlightNode(treeContainer, node.path);
-  const conventions = detectConventions(node.attrs);
-  renderDetail(node, conventions, detailPanel);
+
+  // If we have a cached report, show a "Back to Report" link
+  if (currentReport) {
+    const backLink = document.createElement("button");
+    backLink.className = "report-back-link";
+    backLink.textContent = "\u2190 Back to Report";
+    backLink.addEventListener("click", () => showReport(currentReport));
+    detailPanel.innerHTML = "";
+    detailPanel.appendChild(backLink);
+
+    // Render detail below the back link
+    const detailWrapper = document.createElement("div");
+    detailPanel.appendChild(detailWrapper);
+    const conventions = detectConventions(node.attrs);
+    renderDetail(node, conventions, detailWrapper);
+  } else {
+    const conventions = detectConventions(node.attrs);
+    renderDetail(node, conventions, detailPanel);
+  }
+
   updateUrlParams(urlInput.value.trim(), node.path);
   showDetailView();
+}
+
+// --- Validate All ---
+
+function injectValidateAllButton() {
+  // Remove existing button if present
+  const existing = document.getElementById("validate-all-btn");
+  if (existing) existing.remove();
+
+  const btn = document.createElement("button");
+  btn.id = "validate-all-btn";
+  btn.className = "validate-all-btn";
+  btn.textContent = "Validate All";
+  btn.addEventListener("click", runValidateAll);
+  statusEl.appendChild(btn);
+}
+
+async function runValidateAll() {
+  if (!currentTree) return;
+
+  // Cancel any in-progress validation
+  if (currentAbortController) {
+    currentAbortController.abort();
+  }
+  currentAbortController = new AbortController();
+  currentReport = null;
+
+  const progressUI = renderProgressUI(detailPanel);
+  showDetailView();
+
+  try {
+    const report = await validateStore(currentTree, {
+      onProgress: ({ completed, total }) => progressUI.update(completed, total),
+      signal: currentAbortController.signal,
+    });
+    currentReport = report;
+    showReport(report);
+  } catch (err) {
+    if (err.name !== "AbortError") {
+      detailPanel.innerHTML = `<div class="error-banner">Validation failed: ${escapeHtml(err.message)}</div>`;
+    }
+  } finally {
+    currentAbortController = null;
+  }
+}
+
+function showReport(report) {
+  renderReport(report, onNodeSelect, detailPanel);
 }
 
 // --- Manual path addition ---

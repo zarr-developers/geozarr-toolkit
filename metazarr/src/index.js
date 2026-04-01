@@ -29,4 +29,5 @@ export { tryV3Consolidated, parseV3Consolidated } from "./consolidated-v3.js";
 export { crawlDirectory, tryCrawlDirectory } from "./crawl.js";
 export { detectConventions, getKnownConvention } from "./conventions.js";
 export { validateNode, buildNodeDocument } from "./validator.js";
+export { validateStore, collectNodes, groupByConvention } from "./report.js";
 export { fetchSchema, clearCache } from "./schema-cache.js";

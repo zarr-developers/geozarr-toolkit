@@ -337,9 +337,15 @@ main {
   margin-bottom: 1.25rem;
 }
 
+.conventions-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
 .conventions-section h3 {
   font-size: 0.95rem;
-  margin-bottom: 0.5rem;
 }
 
 .convention-card {
@@ -485,6 +491,220 @@ main {
   font-size: 0.8rem;
   font-family: monospace;
   word-break: break-word;
+}
+
+/* --- Report panel --- */
+
+.report-summary {
+  max-width: 700px;
+}
+
+.report-summary h2 {
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+}
+
+.report-header {
+  font-size: 0.85rem;
+  color: #555;
+  margin-bottom: 0.15rem;
+}
+
+.report-stats {
+  font-size: 0.85rem;
+  color: #555;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.report-convention {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+  overflow: hidden;
+}
+
+.report-convention-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  user-select: none;
+}
+
+.report-convention-header::before {
+  content: "\25B6";
+  font-size: 0.65rem;
+  color: #888;
+  transition: transform 0.15s;
+  flex-shrink: 0;
+}
+
+.report-convention-header.expanded::before {
+  transform: rotate(90deg);
+}
+
+.report-convention-title {
+  flex: 1;
+}
+
+.report-inline-bar {
+  width: 60px;
+  height: 6px;
+  background: #e8e8e8;
+  border-radius: 3px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.report-inline-fill {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s;
+}
+
+.report-node-list {
+  border-top: 1px solid #e0e0e0;
+}
+
+.report-node-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.75rem 0.35rem 1.75rem;
+  font-size: 0.82rem;
+  cursor: pointer;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.report-node-row:last-child {
+  border-bottom: none;
+}
+
+.report-node-row:hover {
+  background: #f0f4ff;
+}
+
+.report-node-path {
+  flex: 1;
+  font-family: monospace;
+  font-size: 0.82rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.report-error-count {
+  font-size: 0.75rem;
+  color: #721c24;
+  flex-shrink: 0;
+}
+
+.report-node-chevron {
+  font-size: 0.6rem;
+  color: #888;
+  flex-shrink: 0;
+  transition: transform 0.15s;
+}
+
+.report-node-row.expanded .report-node-chevron {
+  transform: rotate(90deg);
+}
+
+.report-node-errors {
+  padding: 0.35rem 0.75rem 0.5rem 1.75rem;
+  background: #fef8f8;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.report-node-errors .error-list {
+  margin: 0;
+}
+
+.report-node-errors .error-list li {
+  font-size: 0.78rem;
+}
+
+.report-view-node-link {
+  display: inline-block;
+  margin-top: 0.35rem;
+  font-size: 0.78rem;
+  color: #4a7dff;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.report-view-node-link:hover {
+  text-decoration: underline;
+  background: none;
+}
+
+.report-back-link {
+  display: inline-block;
+  font-size: 0.82rem;
+  color: #4a7dff;
+  cursor: pointer;
+  margin-bottom: 0.75rem;
+  border: none;
+  background: none;
+  padding: 0;
+  font-weight: 600;
+}
+
+.report-back-link:hover {
+  text-decoration: underline;
+}
+
+/* --- Progress bar --- */
+
+.progress-container {
+  margin-top: 0.75rem;
+}
+
+.progress-bar {
+  width: 100%;
+  max-width: 300px;
+  height: 8px;
+  background: #e8e8e8;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: #4a7dff;
+  border-radius: 4px;
+  transition: width 0.15s;
+}
+
+.progress-text {
+  font-size: 0.8rem;
+  color: #666;
+  margin-top: 0.25rem;
+}
+
+/* --- Validate All button --- */
+
+.validate-all-btn {
+  padding: 0.3rem 0.7rem;
+  font-size: 0.78rem;
+  background: #28a745;
+  margin-left: 0.5rem;
+}
+
+.validate-all-btn:hover {
+  background: #218838;
+}
+
+.validate-all-btn:disabled {
+  background: #8bc49b;
 }
 
 /* --- Spinner --- */
