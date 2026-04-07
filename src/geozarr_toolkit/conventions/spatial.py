@@ -62,10 +62,10 @@ class Spatial(BaseModel):
 
     dimensions: list[str] = Field(alias="spatial:dimensions")
     bbox: list[float] | None = Field(None, alias="spatial:bbox", exclude_if=is_none)
-    transform_type: str = Field("affine", alias="spatial:transform_type")
+    transform_type: str | None = Field(None, alias="spatial:transform_type", exclude_if=is_none)
     transform: list[float] | None = Field(None, alias="spatial:transform", exclude_if=is_none)
     shape: list[int] | None = Field(None, alias="spatial:shape", exclude_if=is_none)
-    registration: str = Field("pixel", alias="spatial:registration")
+    registration: str | None = Field(None, alias="spatial:registration", exclude_if=is_none)
 
     model_config = {"extra": "allow", "populate_by_name": True, "serialize_by_alias": True}
 
