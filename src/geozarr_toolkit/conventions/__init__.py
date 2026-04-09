@@ -34,6 +34,17 @@ Example usage:
 """
 
 from geozarr_toolkit.conventions.common import ZarrConventionMetadata
+from geozarr_toolkit.conventions.geoemb import (
+    GEOEMB_SCHEMA_URL,
+    GEOEMB_SPEC_URL,
+    GEOEMB_UUID,
+    ChipLayout,
+    Geoemb,
+    GeoembConventionMetadata,
+    Quantization,
+    ScaleArray,
+    ScaleScalar,
+)
 from geozarr_toolkit.conventions.multiscales import (
     MULTISCALES_SCHEMA_URL,
     MULTISCALES_SPEC_URL,
@@ -61,6 +72,9 @@ from geozarr_toolkit.conventions.spatial import (
 )
 
 __all__ = [
+    "GEOEMB_SCHEMA_URL",
+    "GEOEMB_SPEC_URL",
+    "GEOEMB_UUID",
     "MULTISCALES_SCHEMA_URL",
     "MULTISCALES_SPEC_URL",
     "MULTISCALES_UUID",
@@ -70,13 +84,19 @@ __all__ = [
     "SPATIAL_SCHEMA_URL",
     "SPATIAL_SPEC_URL",
     "SPATIAL_UUID",
+    "ChipLayout",
+    "Geoemb",
+    "GeoembConventionMetadata",
     "GeoProj",
     "Multiscales",
     "MultiscalesAttrs",
     "MultiscalesConventionMetadata",
     "Proj",
     "ProjConventionMetadata",
+    "Quantization",
+    "ScaleArray",
     "ScaleLevel",
+    "ScaleScalar",
     "Spatial",
     "SpatialConventionMetadata",
     "Transform",
