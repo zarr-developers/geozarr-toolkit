@@ -47,7 +47,7 @@ def create_parser() -> argparse.ArgumentParser:
     validate_parser.add_argument(
         "--conventions",
         nargs="+",
-        choices=["spatial", "proj", "multiscales"],
+        choices=["spatial", "proj", "multiscales", "geoemb"],
         help="Conventions to validate (auto-detected if not specified)",
     )
     validate_parser.add_argument(
@@ -231,6 +231,26 @@ def info_command(args: argparse.Namespace) -> int:
                     print(f"    - {asset} (from {derived})")
                 else:
                     print(f"    - {asset}")
+            print()
+
+        if "geoemb" in conventions:
+            print("Geoembeddings:")
+            print(f"  Type: {attrs.get('geoemb:type')}")
+            print(f"  Dimensions: {attrs.get('geoemb:dimensions')}")
+            print(f"  Model: {attrs.get('geoemb:model')}")
+            source_data = attrs.get("geoemb:source_data", [])
+            print(f"  Source data: {len(source_data)} reference(s)")
+            print(f"  Data type: {attrs.get('geoemb:data_type')}")
+            if attrs.get("geoemb:gsd"):
+                print(f"  GSD: {attrs['geoemb:gsd']}m")
+            if attrs.get("geoemb:spatial_layout"):
+                print(f"  Spatial layout: {attrs['geoemb:spatial_layout']}")
+            if attrs.get("geoemb:chip_layout"):
+                cl = attrs["geoemb:chip_layout"]
+                print(f"  Chip layout: {cl.get('layout_type')} {cl.get('chip_size')}")
+            if attrs.get("geoemb:quantization"):
+                q = attrs["geoemb:quantization"]
+                print(f"  Quantization: {q.get('method')} (from {q.get('original_dtype')})")
             print()
 
         if args.verbose:
