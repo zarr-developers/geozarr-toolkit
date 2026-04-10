@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
-from geozarr_toolkit.conventions import MULTISCALES_UUID, SPATIAL_UUID
+from geozarr_toolkit.conventions import GEOEMB_UUID, MULTISCALES_UUID, SPATIAL_UUID
 from geozarr_toolkit.helpers.validation import (
     detect_conventions,
     validate_attrs,
+    validate_geoemb,
     validate_multiscales,
     validate_proj,
     validate_spatial,
@@ -71,6 +72,31 @@ class TestValidateMultiscales:
         assert "Missing 'multiscales'" in errors[0]
 
 
+class TestValidateGeoemb:
+    """Tests for validate_geoemb."""
+
+    VALID_ATTRS: dict = {
+        "geoemb:type": "pixel",
+        "geoemb:dimensions": 64,
+        "geoemb:model": "https://arxiv.org/abs/2507.22291",
+        "geoemb:source_data": [
+            "https://developers.google.com/earth-engine/datasets/catalog/GOOGLE_SATELLITE_EMBEDDING_V1_ANNUAL"
+        ],
+        "geoemb:data_type": "int8",
+    }
+
+    def test_valid(self) -> None:
+        is_valid, errors = validate_geoemb(self.VALID_ATTRS)
+        assert is_valid
+        assert errors == []
+
+    def test_missing_required_field(self) -> None:
+        attrs = {k: v for k, v in self.VALID_ATTRS.items() if k != "geoemb:model"}
+        is_valid, errors = validate_geoemb(attrs)
+        assert not is_valid
+        assert len(errors) > 0
+
+
 class TestValidateZarrConventions:
     """Tests for validate_zarr_conventions."""
 
@@ -126,6 +152,14 @@ class TestDetectConventions:
         }
         detected = detect_conventions(attrs)
         assert "multiscales" in detected
+
+    def test_detect_geoemb_by_prefix(self) -> None:
+        attrs = {"geoemb:type": "pixel"}
+        assert "geoemb" in detect_conventions(attrs)
+
+    def test_detect_geoemb_by_uuid(self) -> None:
+        attrs = {"zarr_conventions": [{"uuid": GEOEMB_UUID}]}
+        assert "geoemb" in detect_conventions(attrs)
 
     def test_detect_all(self) -> None:
         """Test detecting all conventions."""
