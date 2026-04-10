@@ -20,10 +20,10 @@ GEOEMB_UUID: Final[Literal["61c12cc5-0e28-4056-999a-480cf3fb7e4c"]] = (
     "61c12cc5-0e28-4056-999a-480cf3fb7e4c"
 )
 GEOEMB_SCHEMA_URL: Final[str] = (
-    "https://raw.githubusercontent.com/geo-embeddings/embeddings-zarr-convention/refs/tags/v1/schema.json"
+    "https://github.com/geo-embeddings/embeddings-zarr-convention/blob/main/schema.json"
 )
 GEOEMB_SPEC_URL: Final[str] = (
-    "https://github.com/geo-embeddings/embeddings-zarr-convention/blob/v1/README.md"
+    "https://github.com/geo-embeddings/embeddings-zarr-convention/blob/main/README.md"
 )
 
 
@@ -34,7 +34,9 @@ class GeoembConventionMetadata(ZarrConventionMetadata):
     name: Literal["geoemb:"] = "geoemb:"
     schema_url: str = GEOEMB_SCHEMA_URL
     spec_url: str = GEOEMB_SPEC_URL
-    description: str = "Geoembeddings convention for geospatial embedding arrays with model provenance"
+    description: str = (
+        "Geoembeddings convention for geospatial embedding arrays with model provenance"
+    )
 
 
 class ChipLayout(BaseModel):
@@ -177,21 +179,33 @@ class Geoemb(BaseModel):
     source_data: list[str] = Field(alias="geoemb:source_data", min_length=1)
     data_type: str = Field(alias="geoemb:data_type")
     gsd: float | None = Field(None, alias="geoemb:gsd", exclude_if=is_none)
-    chip_layout: ChipLayout | None = Field(None, alias="geoemb:chip_layout", exclude_if=is_none)
+    chip_layout: ChipLayout | None = Field(
+        None, alias="geoemb:chip_layout", exclude_if=is_none
+    )
     quantization: Quantization | None = Field(
         None, alias="geoemb:quantization", exclude_if=is_none
     )
     spatial_layout: Literal["utm_zones", "global"] | None = Field(
         None, alias="geoemb:spatial_layout", exclude_if=is_none
     )
-    build_version: str | None = Field(None, alias="geoemb:build_version", exclude_if=is_none)
-    benchmark: list[str] | None = Field(None, alias="geoemb:benchmark", exclude_if=is_none)
+    build_version: str | None = Field(
+        None, alias="geoemb:build_version", exclude_if=is_none
+    )
+    benchmark: list[str] | None = Field(
+        None, alias="geoemb:benchmark", exclude_if=is_none
+    )
 
-    model_config = {"extra": "allow", "populate_by_name": True, "serialize_by_alias": True}
+    model_config = {
+        "extra": "allow",
+        "populate_by_name": True,
+        "serialize_by_alias": True,
+    }
 
     @model_validator(mode="after")
     def validate_chip_layout_required(self) -> Geoemb:
         """Validate that chip_layout is provided when type is 'chip'."""
         if self.type == "chip" and self.chip_layout is None:
-            raise ValueError("geoemb:chip_layout is required when geoemb:type is 'chip'")
+            raise ValueError(
+                "geoemb:chip_layout is required when geoemb:type is 'chip'"
+            )
         return self
