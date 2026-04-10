@@ -42,8 +42,6 @@ from geozarr_toolkit.conventions.geoemb import (
     Geoemb,
     GeoembConventionMetadata,
     Quantization,
-    ScaleArray,
-    ScaleScalar,
 )
 from geozarr_toolkit.conventions.multiscales import (
     MULTISCALES_SCHEMA_URL,
@@ -94,9 +92,7 @@ __all__ = [
     "Proj",
     "ProjConventionMetadata",
     "Quantization",
-    "ScaleArray",
     "ScaleLevel",
-    "ScaleScalar",
     "Spatial",
     "SpatialConventionMetadata",
     "Transform",
