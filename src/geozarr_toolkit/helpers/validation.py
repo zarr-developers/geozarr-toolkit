@@ -12,9 +12,11 @@ from typing import TYPE_CHECKING, Any
 from pydantic import ValidationError
 
 from geozarr_toolkit.conventions import (
+    GEOEMB_UUID,
     MULTISCALES_UUID,
     PROJ_UUID,
     SPATIAL_UUID,
+    Geoemb,
     Multiscales,
     Proj,
     Spatial,
@@ -100,6 +102,40 @@ def validate_multiscales(attrs: dict[str, Any]) -> tuple[bool, list[str]]:
         return False, [str(err) for err in e.errors()]
 
 
+def validate_geoemb(attrs: dict[str, Any]) -> tuple[bool, list[str]]:
+    """
+    Validate attributes against the geoemb: convention.
+
+    Parameters
+    ----------
+    attrs : dict
+        Attributes dictionary to validate.
+
+    Returns
+    -------
+    tuple[bool, list[str]]
+        (is_valid, list_of_errors)
+
+    Example
+    -------
+    ```python
+    is_valid, errors = validate_geoemb({
+        "geoemb:type": "pixel",
+        "geoemb:dimensions": 768,
+        "geoemb:model": "https://huggingface.co/made-with-clay/Clay",
+        "geoemb:source_data": ["https://registry.opendata.aws/sentinel-2-l2a-cogs/"],
+        "geoemb:data_type": "float32",
+    })
+    ```
+    True
+    """
+    try:
+        Geoemb(**attrs)
+        return True, []
+    except ValidationError as e:
+        return False, [str(err) for err in e.errors()]
+
+
 def validate_zarr_conventions(attrs: dict[str, Any]) -> tuple[bool, list[str]]:
     """
     Validate that zarr_conventions array is properly formatted.
@@ -164,6 +200,10 @@ def detect_conventions(attrs: dict[str, Any]) -> list[str]:
     if "multiscales" in attrs:
         detected.append("multiscales")
 
+    # Check for geoemb convention
+    if "geoemb:type" in attrs:
+        detected.append("geoemb")
+
     # Also check zarr_conventions array
     if "zarr_conventions" in attrs:
         for conv in attrs["zarr_conventions"]:
@@ -178,6 +218,10 @@ def detect_conventions(attrs: dict[str, Any]) -> list[str]:
                     uuid == MULTISCALES_UUID or name == "multiscales"
                 ) and "multiscales" not in detected:
                     detected.append("multiscales")
+                if (
+                    uuid == GEOEMB_UUID or name == "geoemb:"
+                ) and "geoemb" not in detected:
+                    detected.append("geoemb")
 
     return detected
 
@@ -233,6 +277,10 @@ def validate_group(
     if "multiscales" in conventions:
         is_valid, errors = validate_multiscales(attrs)
         results["multiscales"] = errors
+
+    if "geoemb" in conventions:
+        is_valid, errors = validate_geoemb(attrs)
+        results["geoemb"] = errors
 
     # Always check zarr_conventions if present
     if "zarr_conventions" in attrs:
@@ -322,6 +370,10 @@ def validate_attrs(
     if "multiscales" in conventions:
         _, errors = validate_multiscales(attrs)
         results["multiscales"] = errors
+
+    if "geoemb" in conventions:
+        _, errors = validate_geoemb(attrs)
+        results["geoemb"] = errors
 
     if "zarr_conventions" in attrs:
         _, errors = validate_zarr_conventions(attrs)

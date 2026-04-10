@@ -19,6 +19,7 @@ from geozarr_toolkit.helpers.metadata import (
 from geozarr_toolkit.helpers.validation import (
     detect_conventions,
     validate_attrs,
+    validate_geoemb,
     validate_group,
     validate_multiscales,
     validate_multiscales_structure,
@@ -37,6 +38,7 @@ __all__ = [
     "from_geotransform",
     "from_rioxarray",
     "validate_attrs",
+    "validate_geoemb",
     "validate_group",
     "validate_multiscales",
     "validate_multiscales_structure",
