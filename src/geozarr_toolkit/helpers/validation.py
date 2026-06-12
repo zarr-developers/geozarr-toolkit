@@ -170,9 +170,9 @@ def detect_conventions(attrs: dict[str, Any]) -> list[str]:
             if isinstance(conv, dict):
                 uuid = conv.get("uuid")
                 name = conv.get("name")
-                if (uuid == SPATIAL_UUID or name == "spatial:") and "spatial" not in detected:
+                if (uuid == SPATIAL_UUID or name == "spatial") and "spatial" not in detected:
                     detected.append("spatial")
-                if (uuid == PROJ_UUID or name == "proj:") and "proj" not in detected:
+                if (uuid == PROJ_UUID or name == "proj") and "proj" not in detected:
                     detected.append("proj")
                 if (
                     uuid == MULTISCALES_UUID or name == "multiscales"

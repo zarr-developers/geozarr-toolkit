@@ -22,7 +22,7 @@ const SAMPLE_ROOT_ZARR_JSON = {
         attributes: {
           zarr_conventions: [
             { uuid: "d35379db-88df-4056-af3a-620245f8e347", name: "multiscales" },
-            { uuid: "689b58e2-cf7b-45e0-9fff-9cfc0883d6b4", name: "spatial:" },
+            { uuid: "689b58e2-cf7b-45e0-9fff-9cfc0883d6b4", name: "spatial" },
           ],
           "spatial:dimensions": ["Y", "X"],
         },

@@ -19,7 +19,7 @@ class TestSpatialConventionMetadata:
         """Test that default values are set correctly."""
         metadata = SpatialConventionMetadata()
         assert metadata.uuid == SPATIAL_UUID
-        assert metadata.name == "spatial:"
+        assert metadata.name == "spatial"
         assert "spatial" in metadata.schema_url
         assert "spatial" in metadata.spec_url
 

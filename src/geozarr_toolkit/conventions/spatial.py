@@ -20,16 +20,16 @@ SPATIAL_UUID: Final[Literal["689b58e2-cf7b-45e0-9fff-9cfc0883d6b4"]] = (
     "689b58e2-cf7b-45e0-9fff-9cfc0883d6b4"
 )
 SPATIAL_SCHEMA_URL: Final[str] = (
-    "https://raw.githubusercontent.com/zarr-conventions/spatial/refs/tags/v1/schema.json"
+    "https://raw.githubusercontent.com/zarr-conventions/spatial/refs/tags/v0.1/schema.json"
 )
-SPATIAL_SPEC_URL: Final[str] = "https://github.com/zarr-conventions/spatial/blob/v1/README.md"
+SPATIAL_SPEC_URL: Final[str] = "https://github.com/zarr-conventions/spatial/blob/v0.1/README.md"
 
 
 class SpatialConventionMetadata(ZarrConventionMetadata):
-    """Metadata for the spatial: convention in zarr_conventions array."""
+    """Metadata for the spatial convention in zarr_conventions array."""
 
     uuid: Literal["689b58e2-cf7b-45e0-9fff-9cfc0883d6b4"] = SPATIAL_UUID
-    name: Literal["spatial:"] = "spatial:"
+    name: Literal["spatial"] = "spatial"
     schema_url: str = SPATIAL_SCHEMA_URL
     spec_url: str = SPATIAL_SPEC_URL
     description: str = "Spatial coordinate information"

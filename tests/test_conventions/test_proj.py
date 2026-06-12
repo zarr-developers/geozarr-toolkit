@@ -7,7 +7,6 @@ from pydantic import ValidationError
 
 from geozarr_toolkit.conventions import (
     PROJ_UUID,
-    GeoProj,
     Proj,
     ProjConventionMetadata,
 )
@@ -20,7 +19,7 @@ class TestProjConventionMetadata:
         """Test that default values are set correctly."""
         metadata = ProjConventionMetadata()
         assert metadata.uuid == PROJ_UUID
-        assert metadata.name == "proj:"
+        assert metadata.name == "proj"
 
     def test_serialization(self) -> None:
         """Test that metadata serializes correctly."""
@@ -86,10 +85,6 @@ class TestProj:
         """Test that a well-formed but nonexistent EPSG code is rejected."""
         with pytest.raises(ValidationError, match="does not resolve"):
             Proj(**{"proj:code": "EPSG:99999"})
-
-    def test_geoproj_alias(self) -> None:
-        """Test that GeoProj is an alias for Proj."""
-        assert GeoProj is Proj
 
 
 def test_proj_from_fixture(proj_example: dict) -> None:

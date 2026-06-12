@@ -7,15 +7,15 @@ describe("detectConventions", () => {
       zarr_conventions: [
         {
           uuid: "f17cb550-5864-4468-aeb7-f3180cfb622f",
-          name: "proj:",
+          name: "proj",
           schema_url:
-            "https://raw.githubusercontent.com/zarr-experimental/geo-proj/refs/tags/v1/schema.json",
+            "https://raw.githubusercontent.com/zarr-conventions/proj/refs/tags/v0.1/schema.json",
         },
         {
           uuid: "689b58e2-cf7b-45e0-9fff-9cfc0883d6b4",
-          name: "spatial:",
+          name: "spatial",
           schema_url:
-            "https://raw.githubusercontent.com/zarr-conventions/spatial/refs/tags/v1/schema.json",
+            "https://raw.githubusercontent.com/zarr-conventions/spatial/refs/tags/v0.1/schema.json",
         },
       ],
       "proj:code": "EPSG:26711",
@@ -24,10 +24,10 @@ describe("detectConventions", () => {
 
     const result = detectConventions(attrs);
     expect(result).toHaveLength(2);
-    expect(result[0].name).toBe("proj:");
+    expect(result[0].name).toBe("proj");
     expect(result[0].display).toBe("Geospatial Projection (proj:)");
-    expect(result[0].schemaUrl).toContain("geo-proj");
-    expect(result[1].name).toBe("spatial:");
+    expect(result[0].schemaUrl).toContain("proj");
+    expect(result[1].name).toBe("spatial");
     expect(result[1].display).toBe("Spatial Coordinates (spatial:)");
   });
 
@@ -40,11 +40,11 @@ describe("detectConventions", () => {
         },
         {
           uuid: "f17cb550-5864-4468-aeb7-f3180cfb622f",
-          name: "proj:",
+          name: "proj",
         },
         {
           uuid: "689b58e2-cf7b-45e0-9fff-9cfc0883d6b4",
-          name: "spatial:",
+          name: "spatial",
         },
       ],
     };
@@ -53,8 +53,8 @@ describe("detectConventions", () => {
     expect(result).toHaveLength(3);
     expect(result.map((c) => c.name)).toEqual([
       "multiscales",
-      "proj:",
-      "spatial:",
+      "proj",
+      "spatial",
     ]);
   });
 
@@ -83,7 +83,7 @@ describe("detectConventions", () => {
 
     const result = detectConventions(attrs);
     expect(result).toHaveLength(2);
-    expect(result.map((c) => c.name).sort()).toEqual(["proj:", "spatial:"]);
+    expect(result.map((c) => c.name).sort()).toEqual(["proj", "spatial"]);
     // Fallback detection still provides schema URLs from the registry
     for (const conv of result) {
       expect(conv.schemaUrl).toContain("refs/heads/main");
@@ -133,7 +133,7 @@ describe("detectConventions", () => {
       zarr_conventions: [
         {
           uuid: "f17cb550-5864-4468-aeb7-f3180cfb622f",
-          name: "proj:",
+          name: "proj",
           schema_url: "https://example.com/old-tagged-schema.json",
           spec_url: "https://example.com/spec",
         },
@@ -142,9 +142,9 @@ describe("detectConventions", () => {
 
     const result = detectConventions(attrs);
     expect(result[0].schemaUrl).toContain("refs/heads/main");
-    expect(result[0].schemaUrl).toContain("geo-proj");
+    expect(result[0].schemaUrl).toContain("proj");
     // Registry specUrl takes precedence over data spec_url for known conventions
-    expect(result[0].specUrl).toContain("geo-proj");
+    expect(result[0].specUrl).toContain("proj");
     expect(result[0].specUrl).toContain("blob/main");
   });
 
@@ -166,8 +166,8 @@ describe("detectConventions", () => {
   it("does not duplicate conventions", () => {
     const attrs = {
       zarr_conventions: [
-        { uuid: "f17cb550-5864-4468-aeb7-f3180cfb622f", name: "proj:" },
-        { uuid: "f17cb550-5864-4468-aeb7-f3180cfb622f", name: "proj:" },
+        { uuid: "f17cb550-5864-4468-aeb7-f3180cfb622f", name: "proj" },
+        { uuid: "f17cb550-5864-4468-aeb7-f3180cfb622f", name: "proj" },
       ],
     };
 
@@ -182,7 +182,7 @@ describe("getKnownConvention", () => {
       "f17cb550-5864-4468-aeb7-f3180cfb622f",
     );
     expect(conv).toBeDefined();
-    expect(conv.name).toBe("proj:");
+    expect(conv.name).toBe("proj");
   });
 
   it("returns undefined for unknown UUID", () => {

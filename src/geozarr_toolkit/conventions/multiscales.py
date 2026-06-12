@@ -21,10 +21,10 @@ MULTISCALES_UUID: Final[Literal["d35379db-88df-4056-af3a-620245f8e347"]] = (
     "d35379db-88df-4056-af3a-620245f8e347"
 )
 MULTISCALES_SCHEMA_URL: Final[str] = (
-    "https://raw.githubusercontent.com/zarr-conventions/multiscales/refs/tags/v1/schema.json"
+    "https://raw.githubusercontent.com/zarr-conventions/multiscales/refs/tags/v0.1/schema.json"
 )
 MULTISCALES_SPEC_URL: Final[str] = (
-    "https://github.com/zarr-conventions/multiscales/blob/v1/README.md"
+    "https://github.com/zarr-conventions/multiscales/blob/v0.1/README.md"
 )
 
 
@@ -83,6 +83,7 @@ class ScaleLevel(BaseModel):
     derived_from: str | MISSING = MISSING
     transform: Transform | MISSING = MISSING
     resampling_method: str | MISSING = MISSING
+    read_chunk_shape: tuple[int, ...] | MISSING = MISSING
 
     model_config = {"extra": "allow"}
 

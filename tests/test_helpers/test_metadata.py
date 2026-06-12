@@ -25,7 +25,7 @@ class TestCreateZarrConventions:
         """Test creating with a single convention."""
         result = create_zarr_conventions(SpatialConventionMetadata())
         assert len(result) == 1
-        assert result[0]["name"] == "spatial:"
+        assert result[0]["name"] == "spatial"
 
     def test_multiple_conventions(self) -> None:
         """Test creating with multiple conventions."""
@@ -35,8 +35,8 @@ class TestCreateZarrConventions:
         )
         assert len(result) == 2
         names = {conv["name"] for conv in result}
-        assert "spatial:" in names
-        assert "proj:" in names
+        assert "spatial" in names
+        assert "proj" in names
 
 
 class TestCreateSpatialAttrs:

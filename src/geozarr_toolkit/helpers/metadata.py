@@ -168,12 +168,16 @@ def create_multiscales_layout(
                 translation=tuple(transform_data.get("translation", [])) or MISSING,
             )
 
+        read_chunk_shape_data = level.get("read_chunk_shape")
+        read_chunk_shape = tuple(read_chunk_shape_data) if read_chunk_shape_data else MISSING
+
         scale_levels.append(
             ScaleLevel(
                 asset=level["asset"],
                 derived_from=level.get("derived_from", MISSING),
                 transform=transform,
                 resampling_method=level.get("resampling_method", MISSING),
+                read_chunk_shape=read_chunk_shape,
             )
         )
 

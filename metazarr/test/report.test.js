@@ -24,12 +24,12 @@ function withZarrConventions(attrs, conventions) {
 
 const SPATIAL_CONV_ENTRY = {
   uuid: "689b58e2-cf7b-45e0-9fff-9cfc0883d6b4",
-  name: "spatial:",
+  name: "spatial",
 };
 
 const PROJ_CONV_ENTRY = {
   uuid: "f17cb550-5864-4468-aeb7-f3180cfb622f",
-  name: "proj:",
+  name: "proj",
 };
 
 describe("collectNodes", () => {
