@@ -19,8 +19,8 @@ const OUT_DIR = resolve(__dirname, "../src/generated");
 
 /** Known convention schemas to pre-compile, keyed by schema URL. */
 const SCHEMAS = {
-  "https://raw.githubusercontent.com/zarr-conventions/geo-proj/refs/heads/main/schema.json":
-    { id: "geo_proj", draft: "07" },
+  "https://raw.githubusercontent.com/zarr-conventions/proj/refs/heads/main/schema.json":
+    { id: "proj", draft: "07" },
   "https://raw.githubusercontent.com/zarr-conventions/spatial/refs/heads/main/schema.json":
     { id: "spatial", draft: "07" },
   "https://raw.githubusercontent.com/zarr-conventions/multiscales/refs/heads/main/schema.json":

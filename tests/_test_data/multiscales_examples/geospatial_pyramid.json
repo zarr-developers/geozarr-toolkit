@@ -6,11 +6,11 @@
     },
     {
       "uuid": "689b58e2-cf7b-45e0-9fff-9cfc0883d6b4",
-      "name": "spatial:"
+      "name": "spatial"
     },
     {
       "uuid": "f17cb550-5864-4468-aeb7-f3180cfb622f",
-      "name": "proj:"
+      "name": "proj"
     }
   ],
   "multiscales": {

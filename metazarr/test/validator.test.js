@@ -8,7 +8,7 @@ import { runValidation, buildNodeDocument } from "../src/validator.js";
  * for test-only schemas while exercising the same error processing logic.
  */
 
-// Minimal geo-proj schema (Draft-07) for testing
+// Minimal proj schema (Draft-07) for testing
 const PROJ_SCHEMA = {
   $schema: "http://json-schema.org/draft-07/schema#",
   type: "object",
@@ -59,7 +59,7 @@ const CONTAINS_REF_SCHEMA = {
       type: "object",
       properties: {
         uuid: { const: "689b58e2-cf7b-45e0-9fff-9cfc0883d6b4" },
-        name: { const: "spatial:" },
+        name: { const: "spatial" },
         description: { const: "Spatial coordinate information" },
       },
       anyOf: [{ required: ["uuid"] }, { required: ["name"] }],
@@ -82,7 +82,7 @@ describe("runValidation", () => {
       node_type: "array",
       attributes: {
         zarr_conventions: [
-          { uuid: "f17cb550-5864-4468-aeb7-f3180cfb622f", name: "proj:" },
+          { uuid: "f17cb550-5864-4468-aeb7-f3180cfb622f", name: "proj" },
         ],
         "proj:code": "EPSG:26711",
       },
@@ -133,8 +133,8 @@ describe("runValidation", () => {
       node_type: "group",
       attributes: {
         zarr_conventions: [
-          { uuid: "689b58e2-cf7b-45e0-9fff-9cfc0883d6b4", name: "spatial:", description: "Wrong desc" },
-          { uuid: "f17cb550-5864-4468-aeb7-f3180cfb622f", name: "proj:" },
+          { uuid: "689b58e2-cf7b-45e0-9fff-9cfc0883d6b4", name: "spatial", description: "Wrong desc" },
+          { uuid: "f17cb550-5864-4468-aeb7-f3180cfb622f", name: "proj" },
         ],
         "spatial:dimensions": ["Y", "X"],
       },
@@ -170,7 +170,7 @@ describe("runValidation", () => {
       node_type: "group",
       attributes: {
         zarr_conventions: [
-          { uuid: "f17cb550-5864-4468-aeb7-f3180cfb622f", name: "proj:" },
+          { uuid: "f17cb550-5864-4468-aeb7-f3180cfb622f", name: "proj" },
         ],
         // spatial:dimensions is missing (required)
       },
@@ -196,8 +196,8 @@ describe("runValidation", () => {
       attributes: {
         zarr_conventions: [
           { uuid: "d35379db-88df-4056-af3a-620245f8e347", name: "multiscales" },
-          { uuid: "689b58e2-cf7b-45e0-9fff-9cfc0883d6b4", name: "spatial:", description: "Wrong" },
-          { uuid: "f17cb550-5864-4468-aeb7-f3180cfb622f", name: "proj:" },
+          { uuid: "689b58e2-cf7b-45e0-9fff-9cfc0883d6b4", name: "spatial", description: "Wrong" },
+          { uuid: "f17cb550-5864-4468-aeb7-f3180cfb622f", name: "proj" },
         ],
         "spatial:dimensions": ["Y", "X"],
       },
@@ -210,7 +210,7 @@ describe("runValidation", () => {
     const failure = result.containsFailures[0];
     // Best match should be index 1 (spatial entry)
     expect(failure.bestMatchIndex).toBe(1);
-    expect(failure.bestMatchItem.name).toBe("spatial:");
+    expect(failure.bestMatchItem.name).toBe("spatial");
 
     // Should NOT have errors about multiscales (index 0) or proj (index 2)
     expect(result.errors).toEqual([]);

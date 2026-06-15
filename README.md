@@ -3,7 +3,7 @@
 Python library for creating and validating [GeoZarr](https://github.com/zarr-developers/geozarr-spec)-compliant metadata. Provides Pydantic models, helper functions, and a CLI for the modular [Zarr conventions](https://github.com/zarr-conventions):
 
 - **[spatial:](https://github.com/zarr-conventions/spatial)** -- Coordinate transforms between array indices and spatial coordinates
-- **[proj:](https://github.com/zarr-experimental/geo-proj)** -- Coordinate Reference System (CRS) via EPSG codes, WKT2, or PROJJSON
+- **[proj:](https://github.com/zarr-conventions/proj)** -- Coordinate Reference System (CRS) via EPSG codes, WKT2, or PROJJSON
 - **[multiscales](https://github.com/zarr-conventions/multiscales)** -- Pyramid structures and resolution levels
 
 ## Installation

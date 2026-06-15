@@ -78,7 +78,7 @@ class TestValidateZarrConventions:
         """Test validating valid zarr_conventions."""
         attrs = {
             "zarr_conventions": [
-                {"uuid": SPATIAL_UUID, "name": "spatial:"},
+                {"uuid": SPATIAL_UUID, "name": "spatial"},
             ]
         }
         is_valid, errors = validate_zarr_conventions(attrs)

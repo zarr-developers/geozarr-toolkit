@@ -48,7 +48,6 @@ from geozarr_toolkit.conventions.proj import (
     PROJ_SCHEMA_URL,
     PROJ_SPEC_URL,
     PROJ_UUID,
-    GeoProj,
     Proj,
     ProjConventionMetadata,
 )
@@ -70,7 +69,6 @@ __all__ = [
     "SPATIAL_SCHEMA_URL",
     "SPATIAL_SPEC_URL",
     "SPATIAL_UUID",
-    "GeoProj",
     "Multiscales",
     "MultiscalesAttrs",
     "MultiscalesConventionMetadata",

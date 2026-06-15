@@ -5,7 +5,7 @@ The proj convention encodes Coordinate Reference System (CRS) information
 for geospatial data. It focuses solely on "what coordinate system" rather
 than "how to transform" (which is handled by the spatial convention).
 
-Specification: https://github.com/zarr-experimental/geo-proj
+Specification: https://github.com/zarr-conventions/proj
 """
 
 from __future__ import annotations
@@ -21,16 +21,16 @@ PROJ_UUID: Final[Literal["f17cb550-5864-4468-aeb7-f3180cfb622f"]] = (
     "f17cb550-5864-4468-aeb7-f3180cfb622f"
 )
 PROJ_SCHEMA_URL: Final[str] = (
-    "https://raw.githubusercontent.com/zarr-experimental/geo-proj/refs/tags/v1/schema.json"
+    "https://raw.githubusercontent.com/zarr-conventions/proj/refs/tags/v0.1/schema.json"
 )
-PROJ_SPEC_URL: Final[str] = "https://github.com/zarr-experimental/geo-proj/blob/v1/README.md"
+PROJ_SPEC_URL: Final[str] = "https://github.com/zarr-conventions/proj/blob/v0.1/README.md"
 
 
 class ProjConventionMetadata(ZarrConventionMetadata):
-    """Metadata for the proj: convention in zarr_conventions array."""
+    """Metadata for the proj convention in zarr_conventions array."""
 
     uuid: Literal["f17cb550-5864-4468-aeb7-f3180cfb622f"] = PROJ_UUID
-    name: Literal["proj:"] = "proj:"
+    name: Literal["proj"] = "proj"
     schema_url: str = PROJ_SCHEMA_URL
     spec_url: str = PROJ_SPEC_URL
     description: str = "Coordinate reference system information for geospatial data"
@@ -93,7 +93,3 @@ class Proj(BaseModel):
         except Exception:
             raise ValueError(f"proj:code '{self.code}' does not resolve to a known CRS") from None
         return self
-
-
-# Backwards compatibility alias
-GeoProj = Proj

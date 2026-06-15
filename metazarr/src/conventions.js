@@ -3,7 +3,7 @@
  *
  * @typedef {Object} ConventionInfo
  * @property {string} uuid - Convention UUID
- * @property {string} name - Convention name (e.g. "proj:", "spatial:")
+ * @property {string} name - Convention name (e.g. "proj", "spatial")
  * @property {string} display - Human-readable display name
  * @property {string} color - Colorblind-friendly color for UI display
  * @property {string|undefined} schemaUrl - URL to JSON Schema
@@ -16,14 +16,14 @@
  */
 const KNOWN_CONVENTIONS = {
   "f17cb550-5864-4468-aeb7-f3180cfb622f": {
-    name: "proj:",
+    name: "proj",
     display: "Geospatial Projection (proj:)",
     color: "#0072B2", // blue
-    schemaUrl: "https://raw.githubusercontent.com/zarr-conventions/geo-proj/refs/heads/main/schema.json",
-    specUrl: "https://github.com/zarr-conventions/geo-proj/blob/main/README.md",
+    schemaUrl: "https://raw.githubusercontent.com/zarr-conventions/proj/refs/heads/main/schema.json",
+    specUrl: "https://github.com/zarr-conventions/proj/blob/main/README.md",
   },
   "689b58e2-cf7b-45e0-9fff-9cfc0883d6b4": {
-    name: "spatial:",
+    name: "spatial",
     display: "Spatial Coordinates (spatial:)",
     color: "#E69F00", // orange
     schemaUrl: "https://raw.githubusercontent.com/zarr-conventions/spatial/refs/heads/main/schema.json",

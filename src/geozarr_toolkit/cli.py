@@ -227,10 +227,15 @@ def info_command(args: argparse.Namespace) -> int:
             for level in layout:
                 asset = level.get("asset", "?")
                 derived = level.get("derived_from", "")
+                chunk_shape = level.get("read_chunk_shape")
+                parts = [asset]
                 if derived:
-                    print(f"    - {asset} (from {derived})")
-                else:
-                    print(f"    - {asset}")
+                    parts.append(f"from {derived}")
+                if chunk_shape:
+                    parts.append(f"read_chunk_shape={chunk_shape}")
+                print(
+                    f"    - {parts[0]}" + (f" ({', '.join(parts[1:])})" if len(parts) > 1 else "")
+                )
             print()
 
         if args.verbose:
