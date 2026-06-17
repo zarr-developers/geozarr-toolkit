@@ -7,6 +7,5 @@
   ],
   "spatial:dimensions": ["Y", "X"],
   "spatial:transform": [10.0, 0.0, 500000.0, 0.0, -10.0, 5000000.0],
-  "spatial:shape": [1000, 1000],
-  "spatial:bbox": [500000.0, 4990000.0, 510000.0, 5000000.0]
+  "spatial:shape": [1000, 1000]
 }
