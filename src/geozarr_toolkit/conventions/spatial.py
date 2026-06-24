@@ -13,26 +13,29 @@ from __future__ import annotations
 from typing import Final, Literal
 
 from pydantic import BaseModel, Field, model_validator
+from zarr_cm import spatial as _spatial_cm
 
 from geozarr_toolkit.conventions.common import ZarrConventionMetadata, is_none
 
-SPATIAL_UUID: Final[Literal["689b58e2-cf7b-45e0-9fff-9cfc0883d6b4"]] = (
-    "689b58e2-cf7b-45e0-9fff-9cfc0883d6b4"
-)
-SPATIAL_SCHEMA_URL: Final[str] = (
-    "https://raw.githubusercontent.com/zarr-conventions/spatial/refs/tags/v0.1/schema.json"
-)
-SPATIAL_SPEC_URL: Final[str] = "https://github.com/zarr-conventions/spatial/blob/v0.1/README.md"
+# Convention identity (UUID, schema/spec URLs, description) is re-exported from
+# zarr-cm so there is a single source of truth for it across the ecosystem.
+SPATIAL_UUID: Final[str] = _spatial_cm.UUID
+SPATIAL_SCHEMA_URL: Final[str] = _spatial_cm.SCHEMA_URL
+SPATIAL_SPEC_URL: Final[str] = _spatial_cm.SPEC_URL
+SPATIAL_DESCRIPTION: Final[str] = _spatial_cm.CMO["description"]
 
 
 class SpatialConventionMetadata(ZarrConventionMetadata):
     """Metadata for the spatial convention in zarr_conventions array."""
 
-    uuid: Literal["689b58e2-cf7b-45e0-9fff-9cfc0883d6b4"] = SPATIAL_UUID
+    uuid: str = SPATIAL_UUID
+    # `name` is intentionally not sourced from `zarr_cm.spatial.CMO`: that
+    # CMO carries `"spatial:"` (with a trailing colon), whereas the spatial
+    # spec and this toolkit use the bare convention name `"spatial"`.
     name: Literal["spatial"] = "spatial"
     schema_url: str = SPATIAL_SCHEMA_URL
     spec_url: str = SPATIAL_SPEC_URL
-    description: str = "Spatial coordinate information"
+    description: str = SPATIAL_DESCRIPTION
 
 
 class Spatial(BaseModel):
