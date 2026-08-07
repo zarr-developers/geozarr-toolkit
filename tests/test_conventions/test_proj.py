@@ -86,7 +86,7 @@ class TestProj:
     )
     def test_invalid_code_format(self, code: str) -> None:
         """Test that malformed code is rejected."""
-        with pytest.raises(ValidationError, match="single colon"):
+        with pytest.raises(ValidationError, match="AUTHORITY:CODE"):
             Proj(**{"proj:code": code})
 
     def test_unresolvable_code(self) -> None:
