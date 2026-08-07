@@ -68,8 +68,7 @@ class Proj(BaseModel):
         """Validate that code matches the Authority:Code pattern."""
         if v is not None and not _CODE_PATTERN.match(v):
             raise ValueError(
-                "proj:code must be an authority and a code separated by a single "
-                f"colon (e.g. 'EPSG:4326', 'IAU_2015:30100', 'OGC:CRS84'), got '{v}'"
+                f"proj:code must match pattern AUTHORITY:CODE (e.g. 'EPSG:4326'), got '{v}'"
             )
         return v
 
