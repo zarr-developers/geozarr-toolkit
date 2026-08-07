@@ -36,7 +36,7 @@ class ProjConventionMetadata(ZarrConventionMetadata):
     description: str = "Coordinate reference system information for geospatial data"
 
 
-_CODE_PATTERN = re.compile(r"^[A-Z]+:[0-9]+$")
+_CODE_PATTERN = re.compile(r"^[^:]+:[^:]+$")
 
 
 class Proj(BaseModel):
@@ -48,8 +48,8 @@ class Proj(BaseModel):
     Attributes
     ----------
     code : str | None
-        Authority:Code identifier, e.g., "EPSG:4326", "EPSG:32633".
-        Pattern: ^[A-Z]+:[0-9]+$
+        Authority:Code identifier, e.g., "EPSG:4326", "IAU_2015:30100".
+        Pattern: ^[^:]+:[^:]+$
     wkt2 : str | None
         WKT2 (ISO 19162:2019) representation of the CRS.
     projjson : dict | None
@@ -68,7 +68,8 @@ class Proj(BaseModel):
         """Validate that code matches the Authority:Code pattern."""
         if v is not None and not _CODE_PATTERN.match(v):
             raise ValueError(
-                f"proj:code must match pattern AUTHORITY:CODE (e.g. 'EPSG:4326'), got '{v}'"
+                "proj:code must be an authority and a code separated by a single "
+                f"colon (e.g. 'EPSG:4326', 'IAU_2015:30100', 'OGC:CRS84'), got '{v}'"
             )
         return v
 
