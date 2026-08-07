@@ -76,10 +76,18 @@ class TestProj:
         assert result["proj:code"] == "EPSG:32633"
         assert "proj:wkt2" not in result  # Should be excluded as None
 
-    def test_invalid_code_format(self) -> None:
+    @pytest.mark.parametrize("code", ["EPSG:4326", "IAU_2015:30100", "OGC:CRS84", "ESRI:54009"])
+    def test_valid_code_format(self, code: str) -> None:
+        """Test that any authority and code separated by a single colon is accepted."""
+        assert Proj(**{"proj:code": code}).code == code
+
+    @pytest.mark.parametrize(
+        "code", ["not-a-valid-code", "EPSG", "EPSG:4326:extra", ":4326", "EPSG:"]
+    )
+    def test_invalid_code_format(self, code: str) -> None:
         """Test that malformed code is rejected."""
         with pytest.raises(ValidationError, match="AUTHORITY:CODE"):
-            Proj(**{"proj:code": "not-a-valid-code"})
+            Proj(**{"proj:code": code})
 
     def test_unresolvable_code(self) -> None:
         """Test that a well-formed but nonexistent EPSG code is rejected."""
