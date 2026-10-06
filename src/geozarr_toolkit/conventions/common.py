@@ -6,6 +6,7 @@ from typing import Self, TypeGuard
 
 from pydantic import BaseModel, model_validator
 from pydantic.experimental.missing_sentinel import MISSING
+from zarr_cm import validate_convention_metadata_object
 
 
 class ZarrConventionMetadata(BaseModel):
@@ -26,9 +27,13 @@ class ZarrConventionMetadata(BaseModel):
 
     @model_validator(mode="after")
     def ensure_identifiable(self) -> Self:
-        """Ensure at least one identifier is provided."""
-        if self.uuid is MISSING and self.schema_url is MISSING and self.spec_url is MISSING:
-            raise ValueError("At least one of uuid, schema_url, or spec_url must be provided.")
+        """Ensure at least one identifier is provided.
+
+        Delegates the "at least one of uuid/schema_url/spec_url" rule to
+        `zarr_cm.validate_convention_metadata_object` so the requirement
+        stays defined in a single place (zarr-cm).
+        """
+        validate_convention_metadata_object(self.model_dump())
         return self
 
 

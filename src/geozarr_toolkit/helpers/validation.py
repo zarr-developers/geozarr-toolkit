@@ -10,6 +10,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 from pydantic import ValidationError
+from zarr_cm import validate_convention_metadata_object
 
 from geozarr_toolkit.conventions import (
     MULTISCALES_UUID,
@@ -128,9 +129,11 @@ def validate_zarr_conventions(attrs: dict[str, Any]) -> tuple[bool, list[str]]:
             errors.append(f"Convention {i} must be a dictionary")
             continue
 
-        # Check that at least one identifier is present
-        has_id = any(conv.get(key) for key in ("uuid", "schema_url", "spec_url"))
-        if not has_id:
+        # Defer the "at least one identifier" rule to zarr-cm so it stays
+        # defined in a single place.
+        try:
+            validate_convention_metadata_object(conv)
+        except ValueError:
             errors.append(f"Convention {i} must have at least one of: uuid, schema_url, spec_url")
 
     return len(errors) == 0, errors

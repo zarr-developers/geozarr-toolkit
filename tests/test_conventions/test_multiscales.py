@@ -79,10 +79,15 @@ class TestMultiscales:
         multiscales = Multiscales(
             layout=(
                 ScaleLevel(asset="0"),
-                ScaleLevel(asset="1", derived_from="0"),
+                ScaleLevel(asset="1", derived_from="0", transform=Transform(scale=(2.0, 2.0))),
             )
         )
         assert len(multiscales.layout) == 2
+
+    def test_derived_from_requires_transform(self) -> None:
+        """Test that a derived level without a transform fails validation."""
+        with pytest.raises(ValidationError, match="derived_from"):
+            Multiscales(layout=(ScaleLevel(asset="1", derived_from="0"),))
 
     def test_empty_layout_fails(self) -> None:
         """Test that empty layout fails validation."""

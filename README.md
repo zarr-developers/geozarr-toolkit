@@ -6,6 +6,12 @@ Python library for creating and validating [GeoZarr](https://github.com/zarr-dev
 - **[proj:](https://github.com/zarr-conventions/proj)** -- Coordinate Reference System (CRS) via EPSG codes, WKT2, or PROJJSON
 - **[multiscales](https://github.com/zarr-conventions/multiscales)** -- Pyramid structures and resolution levels
 
+Convention identity (UUIDs, schema/spec URLs) and the core structural validation
+rules are sourced from [`zarr-cm`](https://zarr-cm.readthedocs.io/), the shared
+Python implementation of the Zarr conventions metadata, so they stay in sync
+across the ecosystem. geozarr-toolkit layers richer Pydantic models and
+geospatial-specific checks (e.g. resolving `proj:code` via `pyproj`) on top.
+
 ## Installation
 
 ```bash

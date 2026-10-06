@@ -11,6 +11,7 @@ authors = [
 requires-python = ">=3.12"
 dependencies = [
     "zarr>=3.0.8",
+    "zarr-cm>=0.4.1",
     "pydantic>=2.12",
     "pyproj>=3.7.0",
     "structlog>=25.5.0",

@@ -14,26 +14,29 @@ import re
 from typing import Any, Final, Literal
 
 from pydantic import BaseModel, Field, field_validator, model_validator
+from zarr_cm import proj as _proj_cm
 
 from geozarr_toolkit.conventions.common import ZarrConventionMetadata, is_none
 
-PROJ_UUID: Final[Literal["f17cb550-5864-4468-aeb7-f3180cfb622f"]] = (
-    "f17cb550-5864-4468-aeb7-f3180cfb622f"
-)
-PROJ_SCHEMA_URL: Final[str] = (
-    "https://raw.githubusercontent.com/zarr-conventions/proj/refs/tags/v0.1/schema.json"
-)
-PROJ_SPEC_URL: Final[str] = "https://github.com/zarr-conventions/proj/blob/v0.1/README.md"
+# Convention identity (UUID, schema/spec URLs, description) is re-exported from
+# zarr-cm so there is a single source of truth for it across the ecosystem.
+PROJ_UUID: Final[str] = _proj_cm.UUID
+PROJ_SCHEMA_URL: Final[str] = _proj_cm.SCHEMA_URL
+PROJ_SPEC_URL: Final[str] = _proj_cm.SPEC_URL
+PROJ_DESCRIPTION: Final[str] = _proj_cm.CMO["description"]
 
 
 class ProjConventionMetadata(ZarrConventionMetadata):
     """Metadata for the proj convention in zarr_conventions array."""
 
-    uuid: Literal["f17cb550-5864-4468-aeb7-f3180cfb622f"] = PROJ_UUID
+    uuid: str = PROJ_UUID
+    # `name` is intentionally not sourced from `zarr_cm.proj.CMO`: that CMO
+    # carries `"proj:"` (with a trailing colon), whereas the proj spec and
+    # this toolkit use the bare convention name `"proj"`.
     name: Literal["proj"] = "proj"
     schema_url: str = PROJ_SCHEMA_URL
     spec_url: str = PROJ_SPEC_URL
-    description: str = "Coordinate reference system information for geospatial data"
+    description: str = PROJ_DESCRIPTION
 
 
 _CODE_PATTERN = re.compile(r"^[A-Z]+:[0-9]+$")
@@ -74,11 +77,16 @@ class Proj(BaseModel):
 
     @model_validator(mode="after")
     def validate_at_least_one_crs(self) -> Proj:
-        """Validate that at least one CRS field is provided."""
-        if not any([self.code, self.wkt2, self.projjson]):
-            raise ValueError(
-                "At least one of proj:code, proj:wkt2, or proj:projjson must be provided"
-            )
+        """Validate that at least one CRS field is provided.
+
+        Delegates the spec-level "at least one of proj:code/proj:wkt2/
+        proj:projjson" rule to `zarr_cm.proj.validate` so the requirement
+        stays defined in a single place (zarr-cm). The stricter
+        `^[A-Z]+:[0-9]+$` code pattern (`validate_code_format`) and the
+        pyproj resolution check (`validate_code_resolves`) are geozarr-toolkit
+        additions layered on top.
+        """
+        _proj_cm.validate(self.model_dump(by_alias=True, exclude_none=True))
         return self
 
     @model_validator(mode="after")

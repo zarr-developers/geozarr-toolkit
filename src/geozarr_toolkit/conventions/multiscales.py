@@ -12,30 +12,28 @@ from __future__ import annotations
 
 from typing import Final, Literal
 
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, field_validator, model_validator
 from pydantic.experimental.missing_sentinel import MISSING
+from zarr_cm import multiscales as _multiscales_cm
 
 from geozarr_toolkit.conventions.common import ZarrConventionMetadata
 
-MULTISCALES_UUID: Final[Literal["d35379db-88df-4056-af3a-620245f8e347"]] = (
-    "d35379db-88df-4056-af3a-620245f8e347"
-)
-MULTISCALES_SCHEMA_URL: Final[str] = (
-    "https://raw.githubusercontent.com/zarr-conventions/multiscales/refs/tags/v0.1/schema.json"
-)
-MULTISCALES_SPEC_URL: Final[str] = (
-    "https://github.com/zarr-conventions/multiscales/blob/v0.1/README.md"
-)
+# Convention identity (UUID, schema/spec URLs, description) is re-exported from
+# zarr-cm so there is a single source of truth for it across the ecosystem.
+MULTISCALES_UUID: Final[str] = _multiscales_cm.UUID
+MULTISCALES_SCHEMA_URL: Final[str] = _multiscales_cm.SCHEMA_URL
+MULTISCALES_SPEC_URL: Final[str] = _multiscales_cm.SPEC_URL
+MULTISCALES_DESCRIPTION: Final[str] = _multiscales_cm.CMO["description"]
 
 
 class MultiscalesConventionMetadata(ZarrConventionMetadata):
     """Metadata for the multiscales convention in zarr_conventions array."""
 
-    uuid: Literal["d35379db-88df-4056-af3a-620245f8e347"] = MULTISCALES_UUID
+    uuid: str = MULTISCALES_UUID
     name: Literal["multiscales"] = "multiscales"
     schema_url: str = MULTISCALES_SCHEMA_URL
     spec_url: str = MULTISCALES_SPEC_URL
-    description: str = "Multiscale layout of zarr datasets"
+    description: str = MULTISCALES_DESCRIPTION
 
 
 class Transform(BaseModel):
@@ -116,6 +114,18 @@ class Multiscales(BaseModel):
         if not value:
             raise ValueError("multiscales layout must have at least one level")
         return value
+
+    @model_validator(mode="after")
+    def validate_layout_structure(self) -> Multiscales:
+        """Validate the layout against the multiscales spec.
+
+        Delegates structural validation -- in particular the rule that any
+        level with `derived_from` must also carry a `transform` -- to
+        `zarr_cm.multiscales.validate` so it stays defined in a single place
+        (zarr-cm).
+        """
+        _multiscales_cm.validate(self.model_dump())
+        return self
 
 
 class MultiscalesAttrs(BaseModel):
